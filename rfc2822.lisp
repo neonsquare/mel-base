@@ -549,7 +549,9 @@
 		      (if angle-end
 			  (1+ angle-end)
 			  nil)))
-		   (mime-parse-error "parsing mailbox-address: no local-part"))))
+		   (if errorp
+		       (mime-parse-error "parsing mailbox-address: no local-part")
+		       nil))))
 	    (t (multiple-value-bind (local-part domain next-index)
 		   (parse-addr-spec string :start start :end end :errorp errorp)
 		 (if (stringp local-part)
@@ -560,7 +562,9 @@
 											 `("@" ,domain)
 											 nil))))
 		      next-index)
-		     (mime-parse-error "parsing mailbox-address: no local-part"))))))))
+		     (if errorp
+			 (mime-parse-error "parsing mailbox-address: no local-part")
+			 nil))))))))
 
 (defun white-space-p (c)
   (case c
