@@ -298,7 +298,7 @@
     (handler-case
         (let ((tag (imap-read stream)))
           (push tag result)
-          (let ((*imap-read-case* (if (eq :+ tag) :preserve :upcase)))
+          (let ((*imap-read-case* (if (eq :+ tag) :preserve :keyword)))
             (loop for form = (imap-read stream)
                   do (push form result))))
             (end-of-imap-response () (let ((result (nreverse result)))
