@@ -50,7 +50,7 @@
 		       :initform (make-hash-table :test 'equal))))
 )
 
-(defclass maildir-folder (#+nil body-start-cache-mixin basic-receiver basic-sender)
+(defclass maildir-folder (basic-receiver basic-sender)
   ((current-mail :accessor current-mail :type pathname :initarg :current-mail)
    (new-mail :accessor new-mail :type pathname :initarg :new-mail)
    (temporary-mail :accessor temporary-mail :type pathname :initarg :temporary-mail)
@@ -68,6 +68,33 @@
 
 ;; Protocol
 
+(defmethod initialize-instance :after ((folder maildir-folder) 
+				       &key (if-does-not-exist :error)
+				       &allow-other-keys)
+  (let* ((pathname (mel.filesystem:directory-pathname (name folder))))
+    (setf (current-mail folder) (merge-pathnames (make-pathname :directory `(:relative "cur")) pathname)
+	  (new-mail folder) (merge-pathnames (make-pathname :directory `(:relative "new")) pathname)
+	  (temporary-mail folder) (merge-pathnames (make-pathname :directory `(:relative "tmp")) pathname))
+
+    (unless (and (file-directory-p pathname)
+                 (file-directory-p (current-mail folder))
+                 (file-directory-p (new-mail folder))
+                 (file-directory-p (temporary-mail folder)))
+      (case if-does-not-exist
+        (:error (error "Maildir-Folder ~A does not exist" pathname))
+        (:create (ensure-directories-exist (print(current-mail folder)) :verbose t)
+                 (ensure-directories-exist (new-mail folder) :verbose t)
+                 (ensure-directories-exist (temporary-mail folder) :verbose t))))
+    (let ((*default-pathname-defaults* (pathname "")))
+      (setf (current-mail folder) (truename (current-mail folder))
+            (new-mail folder) (truename (new-mail folder))
+            (temporary-mail folder) (truename (temporary-mail folder))))
+    folder))
+
+(defmethod make-maildir-folder (pathname &rest args &key (if-does-not-exist :error) (line-terminator-style nil) &allow-other-keys)
+  (make-instance 'maildir-folder :name pathname :if-does-not-exist if-does-not-exist :line-terminator-style line-terminator-style))
+
+#+nil
 (defmethod make-maildir-folder (pathname &rest args &key (if-does-not-exist :error) (line-terminator-style nil) &allow-other-keys)
   (declare (ignore args))
   (let* ((pathname (mel.filesystem:directory-pathname pathname))
