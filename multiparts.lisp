@@ -363,7 +363,7 @@
 
 (defmethod open-message-input-stream-using-folder
     ((folder message) (part part) start)
-  (let ((stream (nth-part-stream (part-number part) (getf (nth-value 2 (content-type part)) :boundary) folder)))
+  (let ((stream (nth-part-stream (part-number part) (getf (nth-value 2 (content-type folder)) :boundary) folder)))
     (loop repeat start do (read-char stream))
     stream))
 
