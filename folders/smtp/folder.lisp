@@ -178,7 +178,7 @@
 				      :element-type 'character
                                       :remote-host (host folder)
                                       :remote-port (smtp-port folder)))
-    (setf (greeting folder) (read-delimited-line (connection-stream folder))
+    (setf (greeting folder) (nth-value 3 (read-smtp-response (connection-stream folder)))
           (state folder) :connected)
     (format t "Greeting ~A~%" (greeting folder))
     (send-smtp-command folder :ehlo (mel.environment:gethostname))
