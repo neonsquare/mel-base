@@ -30,10 +30,10 @@
 (in-package :mel.mime)
 
 (define-condition mime-parse-error (parse-error)
-  ((context :accessor mime-parse-context :initarg :context))
+  ((context :accessor mime-parse-context :initarg :context :initform nil))
   (:report (lambda (condition stream)
-	     (if (slot-boundp condition 'context)
-		 (format stream "A MIME parse error occured while ~A" (mime-parse-context condition))))))
+	     (when (mime-parse-context condition)
+		 (format stream "A MIME parse error occured while ~A" (mime-parse-context condition)))))))
 
   
 (defun mime-parse-error (context-fmt &rest params)
@@ -797,30 +797,37 @@
 (deftype sign-char () '(and character (member #\+ #\-)))
 )
 
+
+
 (defun date-to-universal-time (date)
   (flet ((match-month (string)
-	   (case (char string 0)
-	     (#\F 2)
-	     (#\S 9)
-	     (#\O 10)
-	     (#\N 11)
-	     (#\D 12)
-	     (otherwise
-	      (case (char string 2)
-		(#\y 5)
-		(#\g 8)
-		(#\l 7)
-		(otherwise
-		 (case (char string 1)
-		   (#\p 4)
-		   (#\u 6)
-		   (otherwise
-		    (case (char string 0)
-		      (#\M 3)
-		      (#\J 7)
-		      (otherwise 
-		       (mime-parse-error"parsing date: ~A did not match a month" 
-			     string)))))))))))
+	   (flet ((month (name num)
+			(if (string= name string :end2 3)
+			  num
+			  (mime-parse-error "parsing date: ~A did not match a month" string))))
+	     (declare (inline month))
+	     (case (char string 0)
+	       (#\F (month "Feb" 2))
+	       (#\S (month "Sep" 9))
+	       (#\O (month "Oct" 10))
+	       (#\N (month "Nov" 11))
+	       (#\D (month "Dec" 12))
+	       (otherwise
+		(case (char string 2)
+		  (#\y (month "May" 5))
+		  (#\g (month "Aug" 8))
+		  (#\l (month "Jul" 7))
+		  (otherwise
+		   (case (char string 1)
+		     (#\p (month "Apr" 4))
+		     (#\u (month "Jun" 6))
+		     (otherwise
+		      (case (char string 0)
+			(#\M (month "Mar" 3))
+			(#\J (month "Jan" 1))
+			(otherwise 
+			 (mime-parse-error"parsing date: ~A did not match a month" 
+					  string))))))))))))
 
     (let (last-result)
       (smeta:with-string-meta (buffer date)
