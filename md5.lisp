@@ -5,7 +5,7 @@
 ;;;; cmucl-help mailing-list hosted at cons.org, in November 2001 and
 ;;;; has been placed into the public domain.
 ;;;;
-;;;; $Id: md5.lisp 8650 2004-02-11 22:46:13Z kevin $
+;;;; $Id: md5.lisp 10181 2004-12-04 18:27:59Z kevin $
 ;;;;
 ;;;; While the implementation should work on all conforming Common
 ;;;; Lisp implementations, it has only been optimized for CMU CL,
@@ -63,15 +63,22 @@
 
 ;;; Section 2:  Basic Datatypes
 
+#-lispworks
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (deftype ub32 ()
     "Corresponds to the 32bit quantity word of the MD5 Spec"
     `(unsigned-byte 32)))
 
-(defmacro assemble-ub32 (a b c d)
-  "Assemble an ub32 value from the given (unsigned-byte 8) values,
+#+lispworks
+(deftype ub32 ()
+    "Corresponds to the 32bit quantity word of the MD5 Spec"
+    `(unsigned-byte 32))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defmacro assemble-ub32 (a b c d)
+    "Assemble an ub32 value from the given (unsigned-byte 8) values,
 where a is the intended low-order byte and d the high-order byte."
-  `(the ub32 (logior (ash ,d 24) (ash ,c 16) (ash ,b 8) ,a)))
+    `(the ub32 (logior (ash ,d 24) (ash ,c 16) (ash ,b 8) ,a))))
 
 ;;; Section 3.4:  Auxilliary functions
 
@@ -110,7 +117,7 @@ where a is the intended low-order byte and d the high-order byte."
   #+cmu
   (kernel:32bit-logical-xor y (kernel:32bit-logical-orc2 x z))
   #-cmu
-  (logxor y (logorc2 x z)))
+  (ldb (byte 32 0) (logxor y (logorc2 x z))))
 
 (declaim (inline mod32+)
 	 (ftype (function (ub32 ub32) ub32) mod32+))
@@ -244,20 +251,6 @@ accordingly."
 ;;; Section 3.4:  Converting 8bit-vectors into 16-Word Blocks
 
 (declaim (inline fill-block fill-block-ub8 fill-block-char))
-(defun fill-block (block buffer offset)
-  "Convert a complete 64 byte input vector segment into the given 16
-word MD5 block.  This currently works on (unsigned-byte 8) and
-character simple-arrays, via the functions `fill-block-ub8' and
-`fill-block-char' respectively."
-  (declare (type (integer 0 #.(- most-positive-fixnum 64)) offset)
-	   (type (simple-array ub32 (16)) block)
-	   (type (simple-array * (*)) buffer)
-	   (optimize (speed 3) (safety 0) (space 0) (debug 0)))
-  (etypecase buffer
-    ((simple-array (unsigned-byte 8) (*))
-     (fill-block-ub8 block buffer offset))
-    (simple-string
-     (fill-block-char block buffer offset))))
 
 (defun fill-block-ub8 (block buffer offset)
   "Convert a complete 64 (unsigned-byte 8) input vector segment
@@ -304,6 +297,21 @@ offset into the given 16 word MD5 block."
 			     (char-code (schar buffer (+ j 1)))
 			     (char-code (schar buffer (+ j 2)))
 			     (char-code (schar buffer (+ j 3)))))))
+
+(defun fill-block (block buffer offset)
+  "Convert a complete 64 byte input vector segment into the given 16
+word MD5 block.  This currently works on (unsigned-byte 8) and
+character simple-arrays, via the functions `fill-block-ub8' and
+`fill-block-char' respectively."
+  (declare (type (integer 0 #.(- most-positive-fixnum 64)) offset)
+	   (type (simple-array ub32 (16)) block)
+	   (type (simple-array * (*)) buffer)
+	   (optimize (speed 3) (safety 0) (space 0) (debug 0)))
+  (etypecase buffer
+    ((simple-array (unsigned-byte 8) (*))
+     (fill-block-ub8 block buffer offset))
+    (simple-string
+     (fill-block-char block buffer offset))))
 
 ;;; Section 3.5:  Message Digest Output
 

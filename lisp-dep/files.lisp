@@ -57,6 +57,15 @@
                      (d_type (:unsigned :char))
                      (d_name (:c-array :char 256)))
 
+;; Oops I re
+#+(and :lispworks :unix :macosx)
+(fli:define-c-struct (dirent (:foreign-name "dirent"))
+                     (d_fileno --ino-t)
+                     (d_reclen (:unsigned :short))
+                     (d_type (:unsigned :char))
+                     (d_namlen (:unsigned :char))
+                     (d_name (:c-array :char 256)))
+
 (defconstant +EBADF+ 9)
 (defconstant +EACCES+ 13)  ; Permission denied.
 (defconstant +EMFILE+ 24)  ; Too many file descriptors in use by process.
