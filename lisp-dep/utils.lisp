@@ -102,7 +102,8 @@ Description:
   #+sbcl (eq :directory (sb-unix:unix-file-kind
 			(namestring x)))
   #+acl (eq :directory (excl:filesys-type x))
-  #+(or mcl openmcl) (ccl:directory-pathname-p x)
+  #+(or mcl openmcl) (and (ccl:directory-pathname-p x)
+			  (probe-file x))
   #+lispworks (lw:file-directory-p x)
   #+abcl (null (pathname-name (truename x)))
   #+(and clisp lisp=cl) (nth-value 0 (ignore-errors (ext:probe-directory x)))
