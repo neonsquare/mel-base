@@ -607,7 +607,7 @@
 	    (1+ semikolon-start))))
 
 (defun parse-address (string &key (start 0) (end (length string)) (errorp t))
-  (handler-case
+  (restart-case 
       (let ((first-special (next-token-of-type string :special :start start :end end)))
 	(ecase first-special
 	  ((nil) (mime-parse-error "parsing address: No address found"))
@@ -618,14 +618,10 @@
 					    :start start 
 					    :end end 
 					    :errorp errorp))))
-    (mime-parse-error (c) 
-      (let ((restart (find-restart 'use-as-display-name)))
-	(if restart
-	    (invoke-restart 'use-as-display-name
-			    (make-instance 'invalid-address
-					   :display-name string
-					   :address-spec nil))
-	    (error c))))))
+    (use-as-display-name () 
+      (make-instance 'invalid-address
+		     :display-name string
+		     :address-spec nil))))
 
 (defun parse-address-list (string  &key (start 0) (end (length string)))
   (let (addresses)
