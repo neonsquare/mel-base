@@ -870,8 +870,8 @@
 					   (integer) (setf seconds last-result)
 					   (skip-ws)
 					   (:or (:and (:type sign-char zone) (setf zone (case zone
-											  (#\+ 1)
-											  (#\- -1)))
+											  (#\+ -1)
+											  (#\- 1)))
 						      (integer) (setf zone (* zone last-result)))
 						(:and (word) (setf zone 0)))))
 					; (values seconds minutes hours day month)
