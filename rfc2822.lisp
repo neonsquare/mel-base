@@ -213,7 +213,7 @@
     (handler-case
         (flet ((field-name-char-p (c)
                  (or (char<= #\! c #\9) (char<= #\; c #\~))))
-          (with-output-to-string (field-name field-name-buffer :element-type 'base-char)
+          (with-output-to-string (field-name field-name-buffer)
             (with-output-to-string (field-body)
               (loop
                (loop for c = (prog1 (read-char stream) (incf octets))
