@@ -560,6 +560,11 @@
 		  next-index)
 		 (mime-parse-error "parsing mailbox-address: no local-part"))))))))
 
+(defun white-space-p (c)
+  (case c
+    ((#\space #\linefeed #\return #\tab) t)
+    (otherwise nil)))
+
 (defun parse-mailbox-list (string  &key (start 0) (end (length string)))
   (let (mailboxes)
     (nreverse
@@ -578,6 +583,8 @@
 	    (if start
 		(incf start)
 		(return mailboxes))
+	    (setf start (or (position-if-not #'white-space-p string :start start)
+			    start))
 	    )))))
 
 (defun parse-group-address (string &key (start 0) (end (length string)) (errorp t))
@@ -638,6 +645,8 @@
 	    (if start
 		(incf start)
 		(return addresses))
+	    (setf start (or (position-if-not #'white-space-p string :start start)
+			    start))
 	    )))))
 
 (defun address (address-designator)
