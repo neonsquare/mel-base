@@ -77,10 +77,10 @@
 
 (define-condition folder-not-found 
     (mel-error)
-  ((name :reader name :initarg :name))
+  ((name :reader folder-not-found-name :initarg :name))
   (:report (lambda (condition stream)
              (format stream "Folder ~A not found."
-                     (name condition)))))
+                     (folder-not-found-name condition)))))
 
 (defun find-folder (name &optional (error-p t))
   (let* ((name (coerce-name name))

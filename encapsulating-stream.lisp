@@ -70,6 +70,11 @@
 (defmethod mel.gray-stream:stream-write-char ((stream encapsulating-output-stream) character)
   (write-char character (encapsulated-output-stream stream)))
 
+#+(or sbcl cmu)
+(defmethod mel.gray-stream:stream-write-sequence ((stream encapsulating-output-stream) sequence &optional start end)
+  (write-sequence sequence (encapsulated-output-stream stream) :start (or start 0) :end end))
+
+
 #-abcl
 (defmethod close ((stream encapsulating-output-stream) &key abort)
   (close (encapsulated-output-stream stream) :abort abort))
