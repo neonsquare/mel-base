@@ -34,9 +34,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; GETPID: Get the pid of the daemon ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#+(and #.(cl:if (cl:find-package "UFFI") '(and) '(or)))
+#+(and unix #.(cl:if (cl:find-package "UFFI") '(and) '(or)))
 (uffi:def-function "getpid" ():returning :int)
 
+#+(and #.(cl:if (cl:find-package "UFFI") '(or) '(and)))
 (defun getpid ()
 #+(and clisp #.(cl:if (cl:find-package "LINUX") '(and) '(or)))
 (linux:getpid)

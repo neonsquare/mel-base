@@ -84,4 +84,4 @@
 		 (:file "encapsulating-stream" :depends-on ("packages"))
 		 (:file "line-terminator-filter" :depends-on ("encapsulating-stream"))
 		 (:file "compose-message" :depends-on ("protocols" "mime")))
-    :depends-on (#+sbcl sb-posix #+sbcl sb-md5))
+    :depends-on (#+sbcl sb-posix #+sbcl sb-md5 #+sb-bsd-sockets))
