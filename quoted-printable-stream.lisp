@@ -31,23 +31,34 @@
 
 ;; Quoted Printable input-stream
 
-(defclass quoted-printable-input-stream (encapsulating-input-stream)())
+(defclass quoted-printable-input-stream (encapsulating-input-stream)
+  ((octet-count :initarg :octet-count :initform 0 :accessor octet-count)))
 
 (defparameter *digit-chars* "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 (defun char-integer (char)
-  (position (char-upcase char) *digit-chars*))   
+  (position (char-upcase char) *digit-chars*))
 
 (defmethod mel.gray-stream:stream-read-char ((stream quoted-printable-input-stream))
   (let* ((eis (encapsulated-input-stream stream))
-         (c (read-char eis nil :eof)))
+         (c (if (zerop (octet-count stream)) :eof (read-char eis nil :eof))))
+    (flet ((get-char (eis)
+	     (if (zerop (octet-count stream))
+		 (signal 'end-of-file)
+		 (let ((c (read-char eis)))
+		   (decf (octet-count stream))
+		   c))))
+    (unless (eq c :eof)
+      (decf (octet-count stream)))
     (if (eql c #\=)
       (handler-case
           (let ((c (peek-char nil eis)))
-            (cond ((digit-char-p c 16) (read-char eis) (code-char (+ (* (char-integer c) 16)
-                                                                     (char-integer (read-char eis)))))
-                  ((eql c #\return) (read-char eis)(read-char eis)(read-char stream))
-                  ((eql c #\newline) #+nil(warn "Newline read instead of CR")(read-char eis)(read-char stream))
+            (cond ((digit-char-p c 16) 
+		   (get-char eis)
+		   (code-char (+ (* (char-integer c) 16)
+				 (char-integer (get-char eis)))))
+                  ((eql c #\return) (get-char eis)(get-char eis)(read-char stream))
+                  ((eql c #\newline) #+nil(warn "Newline read instead of CR")(get-char eis)(read-char stream))
                   (t (warn "Illegal quoted printable"))))
         (end-of-file () (error "Unexpected end of file")))
-      c)))
+      c))))
