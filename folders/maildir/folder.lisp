@@ -57,7 +57,7 @@
    (uid-cache :accessor uid-cache :initform (make-hash-table :test 'equal))
 
    (new-mail-counter :initform 0)
-   (selected-messages :accessor selected-messages)
+   (selected-messages :accessor selected-messages :initform nil)
    (recent-messages)
    (change-tag :initform nil)
    (line-terminator :initform nil :initarg :line-terminator-style :reader line-terminator-style)
@@ -402,6 +402,7 @@
   (declare (optimize (speed 0) (safety 3)))
   (or (and (folder-recent-p folder)
 	   (slot-boundp folder 'selected-messages)
+	   (selected-messages folder)
 	   (progn (map nil fn (selected-messages folder)) (selected-messages folder)))
       (setf (selected-messages folder)
 	    (let ((messages nil))
