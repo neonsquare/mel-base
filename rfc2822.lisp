@@ -33,7 +33,7 @@
   ((context :accessor mime-parse-context :initarg :context :initform nil))
   (:report (lambda (condition stream)
 	     (when (mime-parse-context condition)
-		 (format stream "A MIME parse error occured while ~A" (mime-parse-context condition)))))))
+		 (format stream "A MIME parse error occured while ~A" (mime-parse-context condition))))))
 
   
 (defun mime-parse-error (context-fmt &rest params)
