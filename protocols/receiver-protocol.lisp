@@ -130,3 +130,11 @@ to read the message in rfc2822 format"
 	  do (funcall hook message)
 	  (ensure-headers-read (folder message) message))))
 
+(defun message-string (message)
+  (message-string-using-folder (folder message) message))
+
+(defmethod message-string-using-folder ((folder basic-receiver) (message message))
+  (with-output-to-string (out)
+    (with-open-stream (stream (open-message-input-stream message))
+      (loop for c = (read-char stream nil nil)
+	    while c do (write-char c out)))))

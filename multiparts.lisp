@@ -377,10 +377,10 @@
 (defmethod nth-part (nth (message mime-header-mixin))
   (make-instance 'part :parent message :part-number nth))
 
-(defun part-string (part)
+(defun part-body-string (part)
   (with-output-to-string (out)
     (with-open-stream (s (message-body-stream part))
-      (loop repeat (content-octets s)
+      (loop repeat (content-octets part)
 	    for c = (read-char s)
 	    do (write-char c out)))))
 
