@@ -47,6 +47,8 @@
 (sb-unix:unix-getpid)
 #+(and cmu unix)
 (unix:unix-getpid)
+#+openmcl
+(ccl::getpid)
 
 #+(not unix)
 (random 10000))
@@ -68,10 +70,18 @@
 	(uffi:convert-from-foreign-string name)
 	(error "gethostname() failed."))))
 
+#+openmcl
+(defun gethostname ()
+  "Returns the hostname"
+  (ccl::%stack-block ((resultbuf 256))  
+    (if (zerop (#_gethostname resultbuf 256))
+	(ccl::%get-cstring resultbuf)
+	(error "gethostname() failed."))))
+
 #+clisp
 (defun gethostname ()
   (posix:uname-nodename (posix:uname)))
 
-#-(and unix #.(cl:if (cl:find-package "UFFI") '(and) '(or)))
+#+(or (not unix) #.(cl:if (cl:find-package "UFFI") '(or) '(and)))
 (defun gethostname ()
   "localhost")

@@ -127,12 +127,14 @@
   (let ((wildspec (make-pathname :name :wild :type :wild :defaults pathspec)))
     #+lispworks (directory wildspec :test (complement #'lw:file-directory-p))
     #+allegro (remove-if #'excl:file-directory-p (directory wildspec))
+    #+openmcl (directory wildspec :directories nil :files t)
     #-(or lispworks allegro) (remove-if #'null (directory wildspec) :key #'pathname-name)))
 
 (defun list-directories (pathspec)
   (let ((wildspec (make-pathname :name :wild :type :wild :defaults pathspec)))
     #+lispworks (directory wildspec :test #'lw:file-directory-p)
     #+allegro (remove-if-not #'excl:file-directory-p (directory wildspec))
+    #+openmcl (directory wildspec :directories t :files nil)
     #-(or lispworks allegro) (remove-if-not #'null (directory wildspec) :key #'pathname-name)))
 
 (defun map-files (fn pathspec &key (test (constantly t))(recursivep nil))

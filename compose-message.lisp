@@ -118,7 +118,7 @@
 	  collect (cons (rest tokens)
 			(first tokens)))))
 
-(defparameter *mime-table* #+(and unix (not macosx)) (parse-mime-table) #-(and unix (not macosx)) nil)
+(defparameter *mime-table* #+(and unix (not macosx) (not openmcl)) (parse-mime-table) #-(and unix (not macosx) (not openmcl)) nil)
 
 (defun guess-content-type (file)
   (let ((pathname-type (pathname-type file :case :common)))

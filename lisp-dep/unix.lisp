@@ -57,19 +57,23 @@
   #+(and lispworks unix) (system:file-stat-last-access (%stat stat))
   #+sbcl (sb-posix:stat-atime (%stat stat))
   #+cmu (nth-value 9 (unix:unix-stat (ext:unix-namestring stat)))
-  #+clisp (posix:file-stat-atime (%stat stat)))
+  #+clisp (posix:file-stat-atime (%stat stat))
+  #+openmcl nil)
 
 (defun stat-last-change (stat)
   #+(and lispworks unix) (system:file-stat-last-change (%stat stat))
   #+sbcl (sb-posix:stat-ctime (%stat stat))
   #+cmu (nth-value 11 (unix:unix-stat (ext:unix-namestring stat)))
-  #+clisp (posix:file-stat-ctime (%stat stat)))
+  #+clisp (posix:file-stat-ctime (%stat stat))
+  #+openmcl nil)
 
 (defun stat-last-modify (stat)
   #+(and lispworks unix) (system:file-stat-last-modify (%stat stat))
   #+sbcl (sb-posix:stat-mtime (%stat stat))
   #+cmu (nth-value 10 (unix:unix-stat (ext:unix-namestring stat)))
-  #+clisp (posix:file-stat-mtime (%stat stat)))
+  #+clisp (posix:file-stat-mtime (%stat stat))
+  #+openmcl (multiple-value-bind (succ mode size mtime inode uid)
+		(ccl::%stat stat) mtime))
 
 (defun stat (filename)
   (values t
@@ -79,7 +83,7 @@
 
 ;;; Directory Changes
 
-#+(or sbcl (and lispworks unix) cmu clisp)
+#+(or sbcl (and lispworks unix) cmu clisp openmcl)
 (defun directory-contents-changed-p (directory tag)
   (assert (file-directory-p directory) (directory) "File ~S is no directory" directory)
   (let ((mtime (stat-last-modify directory)))

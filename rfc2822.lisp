@@ -322,9 +322,9 @@
                    (when (and (or (<= 0 code 31)(= code 127))(not (= code 9))(not (= code 11)))
                      (return-from parse-rfc2822 (values c :control (1+ index) start))))
                  (case c
-                   ((#\space #\tab #-abcl #\vt) (loop (let ((c (get-char)))
+                   ((#\space #\tab #-(or abcl openmcl) #\vt) (loop (let ((c (get-char)))
                                                  (case c
-                                                   ((#\space #\tab #-abcl #\vt) nil)
+                                                   ((#\space #\tab #-(or abcl openmcl) #\vt) nil)
                                                    (:epsilon (return (if ignore-space (values nil :epsilon index start)
                                                                        (values " " :space index start))))
                                                    (otherwise (when ignore-space (setf start index)(backtrack))
