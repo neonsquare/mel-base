@@ -350,7 +350,7 @@
   (send-pop3-command folder :quit))
 
 (defmethod delete-message-using-folder ((folder pop3-folder) message)
-  (send-pop3-command :dele (idx (find-message folder (uid message)))))
+  (send-pop3-command folder :dele (idx (find-message folder (uid message)))))
 
 (defmethod count-messages ((folder pop3-folder))
   (length (send-pop3-command folder :list)))
