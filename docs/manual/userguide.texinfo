@@ -1,0 +1,180 @@
+@node Userguide
+@chapter Userguide
+
+@menu
+* Working with mail folders::
+* The Common Lisp POP3 Server::
+* The Mail Reader::
+@end menu
+
+@node Working with mail folders
+@section Working with mail folders
+
+@menu
+* Opening and creating mail folders::
+* Access messages::
+* Copy Move and Delete Messages::
+* Sending Messages::
+@end menu
+
+@node Opening and creating mail folders
+@subsection Opening and creating mail folders
+
+@menu
+* Open an existing Maildir folder::
+* Create a new (empty) Maildir folder::
+@c * Open a POP folder::
+* Open a SMTP Relay Folder::
+@end menu
+
+There are four kinds of mail folders so far: Maildir, IMAP, POP3 and SMTP-Relay
+Each mail folder has a dedicated constructor named @code{make-}<foldertype>
+
+@node Open an existing Maildir folder
+@subsubsection Open an existing Maildir folder
+
+@lisp
+(defvar *inbox* (make-maildir-folder "/home/jsc/Mail/inbox/"))
+@result{#<MAILDIR-FOLDER /home/jsc/Mail/inbox/}
+@end lisp
+
+Note: the trailing slash in a Maildir folder's name is mandatory!
+
+@node Create a new (empty) Maildir folder
+@subsubsection Create a new (empty) Maildir folder
+
+@lisp
+(defvar *outbox* (make-maildir-folder "/tmp/test-outbox/" 
+                                      :if-does-not-exist :create))
+@result{#<MAILDIR-FOLDER /tmp/test-outbox/}
+@end lisp
+
+@node Open an IMAP Folder
+@subsubsection Open an IMAP Folder
+
+@lisp
+(defvar *imap* (make-imap-folder :host "imap.server.de" 
+				 :username "user"
+				 :password "password"))
+@result{#<IMAP-FOLDER imap://user!password@@imap.server.de:110}
+@end lisp
+
+The @code{:create} option for @code{:if-does-not-exist} does not work
+for IMAP folders.
+
+@node Open a POP Folder
+@subsubsection Open a POP Folder
+
+@lisp
+(defvar *pop3* (make-pop3-folder :host "pop3.server.de" 
+				 :username "user" 
+				 :password "password"))
+@result{#<POP3-FOLDER pop3://user!password@@pop3.server.de:110}
+@end lisp
+
+The @code{:create} option for @code{:if-does-not-exist} does not work
+for POP3 folders.
+
+@node Open a SMTP Relay Folder
+@subsubsection Open a SMTP Relay Folder
+
+@deffn function make-smtp-relay-folder &key host port username password
+Opens a connection to the SMTP server @var{host} on the port given
+in @var{port} (defaults to 25). If @var{username} and @var{password} is
+given then authenticated SMTP is used.
+@end deffn
+
+@lisp
+(defvar *smtp* (make-smtp-relay-folder :host "smtp.arcor.de"
+				       :username "someone"
+				       :password "else"))
+@end lisp
+
+The @code{:create} option for @code{:if-does-not-exist} does not work
+for SMTP folders.
+
+@node Access messages
+@subsection Access messages
+
+Accessing messages works through proxy objects. A message object of a message
+fetched from a mailbox has its @code{folder} slot set to the folder it originates from.
+
+To get a list of all accessible messages in a folder one can use the @code{messages} or
+the @code{map-messages} function.
+
+@deffn method messages folder
+The result of this function is a list of accessible message objects in @var{folder}.This objects can then get used to access the attributes and data of the messages.
+@end deffn
+
+@deffn method map-messages fn folder
+The result of this function is a list of accessible message objects in @var{folder}.This objects can then get used to access the attributes and data of the messages. The function @var{fn} gets called for each message object one times. The order in which
+this occurs is undefined. The behaviour when accessing header-fields or any content of the message besides of the unique id is
+undefined too. The reason for this is that some folder implementations are not responsive while fetching messages so any
+request to them may fail. The purpose of @var{fn} is especially to provide progress feedback when fetching alot of message objects.
+@end deffn
+
+Both @code{messages} as well as @code{map-messages} should be implemented to do nothing more than to associate the message-objects
+with the unique ids of the messages in the folder. If the contents of the folder have not changed a cached list of message-objects
+can get returned.
+
+@lisp
+@r{;; All messages from the IMAP folder above}
+(defvar *messages* (messages *imap*))
+@end lisp
+
+@node Copy Move and Delete Messages
+@subsection Copy Move and Delete Messages
+
+@deffn function copy-message message sink-folder
+This function writes a copy of @var{message} into
+@var{sink-folder}.
+@end deffn
+
+@deffn function move-message message sink-folder
+This function moves @var{message} into
+@var{sink-folder}. The default behaviour supported in
+the folder protocol is implemented through a copy and delete
+operation. Folder classes can override this behaviour by
+implementing @code{move-message-using-folder}
+@end deffn
+
+@deffn function delete-message message
+@var{message} is deleted from its folder.
+@end deffn
+
+@node Sending Messages
+@subsection Sending Messages
+
+
+@node The Common Lisp POP3 Server
+@section The Common Lisp POP3 Server
+
+@menu
+* Create an instance of the server::
+* Starting and stopping::
+* Configure authentication::
+@end menu
+
+@node Create an instance of the server
+@subsection Create an instance of the server
+
+@node Starting and stopping
+@subsection Starting and stopping
+
+@node Configure authentication
+@subsection Configure authentication
+
+
+@node The Mail Reader
+@section The Mail Reader
+
+@menu
+* Starting the Mail Reader::
+* Mail Reader Commands::
+@end menu
+
+@node Starting the Mail Reader
+@subsection Starting the Mail Reader
+
+@node Mail Reader Commands
+@subsection Mail Reader Commands

@@ -1,0 +1,75 @@
+@node Introduction
+@chapter Introduction
+
+@menu
+* Purpose::
+* Installation::
+@end menu
+
+@node Purpose
+@section Purpose
+
+@node Installation
+@section Installation
+
+@menu
+* Get ASDF::
+* Register the system::
+* Compile and load the system::
+@end menu
+
+@node Get ASDF
+@subsection Get ASDF
+
+Many Common Lisp implementations already come with @acronym{ASDF} (Another System Definition Facility).
+SBCL and OpenMCL have it bundled and make it available via a simple @code{(require 'asdf)}. Debian Users
+who use ``Common Lisp Controller'' already have it in their lisp images.
+
+If you do not have ASDF yet you can download it at @url{http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/cclan/asdf/}.
+It is a single file called @file{asdf.lisp}. To load it type @code{(load "asdf.lisp")} into your listener or startup file.
+
+@node Register the system
+@subsection Register the system
+
+@menu
+* Unix like Systems::
+* Other Operating Systems::
+@end menu
+
+ASDF needs to get advised on where the systems reside. There are several possible ways
+to do this. All have in common that they use the special variable @var{asdf:*central-registry*}.
+This variable contains a list of directories in which ASDF searches for system files.
+
+@node Unix like Systems
+@subsubsection Unix like Systems
+
+Unix systems support symbolic links on the filesystem level. On such a system it is easy
+to setup an ASDF registry by pushing a single directory onto @var{asdf:*central-registry*}
+and register new systems by simply creating a symbolic link to the real system file.
+
+@example
+$ cd
+$ mkdir lisp-systems
+$ cd lisp-systems
+$ ln -s ../path/to/@value{PROJECTSYSTEM}/@value{PROJECTSYSTEM}.asd .
+@end example
+
+Please do @strong{not} copy the system file out of the project directory. ASDF uses the
+location of the system to find the other source-files.
+
+@node Other Operating Systems
+@subsubsection Other Operating Systems
+
+To register a system on operating systems which do not support symbolic links one simply
+pushes the project directory onto @var{asdf:*central-registry*}. This is best done in
+the startup file of the lisp implementation.
+
+@node Compile and load the system
+@subsection Compile and load the system
+
+Compiling and loading of a system is done the same way with ASDF. If the system is not yet
+compiled or some source file got an update, ASDF compiles the system automatically before it loads it.
+
+@example
+CL-USER > (asdf:operate 'asdf:load-op :@value{PROJECTSYSTEM})
+@end example

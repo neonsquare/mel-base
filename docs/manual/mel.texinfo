@@ -1,0 +1,87 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename mel.info
+@settitle Mel Manual
+@afourpaper
+@macro project {}
+@value{PROJECT}
+@end macro
+@c %**end of header
+
+@set PROJECT Mel
+@set PROJECTSYSTEM mel-base
+@set VERSION 0.1
+@set CREATED 8.April 2004
+@set UPDATED 8 April 2004
+@set UPDATE-MONTH August 2004
+
+
+@copying
+
+@quotation
+Copyright (c) by Jochen Schmidt
+
+The document is part of the source distribution of @project{} . See the @file{README} file
+for more information.
+
+See the @file{LICENSE} and @file{CREDITS} files for 
+more information.
+@end quotation
+
+@end copying
+
+@titlepage
+
+@title @project{}
+@subtitle Version @value{VERSION}
+@subtitle @value{UPDATE-MONTH}
+@author Jochen Schmidt
+@author @email{jsc@@dataheaven.de}
+
+
+@c The following two commands start the copyright page.
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+
+@end titlepage
+
+@contents
+
+@ifnottex
+
+@node Top
+@comment  node-name,  next,  previous,  up
+@top @project
+
+@insertcopying
+
+@end ifnottex
+
+@menu
+* Preface::
+* Introduction::
+* Reference::
+* Index::
+@end menu
+
+@c Chapters
+
+@node Preface
+@unnumbered Preface
+
+This manual provides reference to the features of @project . 
+It starts with an introduction to @project{} 
+and how to install it.
+The reference chapter (@pxref{Reference} documents most if not all external symbols with examples of usage.
+
+@include introduction.texinfo
+@include userguide.texinfo
+@include reference.texinfo
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

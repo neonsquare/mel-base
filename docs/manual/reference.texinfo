@@ -1,0 +1,164 @@
+@node Reference
+@chapter Reference
+
+@menu
+* Sender Protocol::             
+* Receiver Protocol::           
+* Message Transport Protocol::  
+* Folder Metainformation Protocol::  
+* Message Metainformation Protocol::  
+* Folder Implementation Details::  
+@end menu
+
+
+@node Sender Protocol
+@section Sender Protocol
+
+@deftp {Protocol Class} sender
+All folders which allow to store/send email have to support
+the sender protocol.
+@end deftp
+
+@deffn {generic function} open-message-storing-stream folder message
+Opens a stream were the client can dump an email in RFC2822 format. After closing
+the stream the message gets accepted by the receiver as a new message.
+@end deffn
+
+@node Receiver Protocol
+@section Receiver Protocol
+
+@deftp {Protocol Class} receiver
+All folders which allow to fetch email have to support
+the receiver protocol.
+@end deftp
+
+@deffn {function} open-message-input-stream message start
+Is a trampoline function to @code{open-message-input-stream-using-folder}.
+All that is done by this function is to take the folder of @var{message}
+and provide it as an additional argument to @code{open-message-input-stream-using-folder}.
+This way it is possible to write methods which are specialized on a folder
+implementation.
+@end deffn
+
+@deffn {generic function} open-message-input-stream-using-folder folder message start
+Open an input stream to @var{message} in folder @var{folder}. @var{start} allows to skip
+the first @var{start} octets of @var{message}.
+@end deffn
+
+@deffn {generic function} skip-headers-using-folder folder message stream
+Skip the header part of @var{stream} to @var{message} contained in @var{folder}.
+This functions purpose is to provide the hooks for efficient fetching of
+message bodies. A default method is provided which naively skips the headers
+by reading as many octets until a header terminating sequence appears (CRLF CRLF).
+@end deffn
+
+@deffn {generic function} message-header-stream-using-folder folder message
+Gives a stream to the headers of @var{message} in @var{folder}. Efficient Implementations
+can be provided by particular folder implementations. The default method is to just
+open a message input stream using @code{open-message-input-stream}. Implementations of
+this method are allowed to provide more data after the header is read.
+@end deffn
+
+@deffn {generic function} message-body-stream-using-folder folder message
+Gives a stream to the body of @var{message} in @var{folder}. Efficient Implementations
+can be provided by particular folder implementations. The default method is to
+open a message input stream using @code{open-message-input-stream}
+@end deffn
+
+@deffn {generic function} ensure-headers-read folder message
+Read in an cache the header-fields of @var{message} in @var{folder}.
+@end deffn
+
+@deffn {generic function} message-size-using-folder folder message
+Compute the size of a message
+@end deffn
+
+@node Message Transport Protocol
+@section Message Transport Protocol
+
+@deffn {generic function} clear-folder folder
+Delete all email from @var{folder}.
+@end deffn
+
+@deffn {generic function} copy-folder sender receiver
+Copy all email from folder @var{sender} to folder @var{receiver}. @var{sender} must
+support the sender protocol while @var{receiver} must provide support for the receiver protocol.
+The default method copies all emails by using @code{copy-message} for all messages in @var{sender}.
+@end deffn
+
+@deffn {generic function} move-folder sender receiver
+Move all email from folder @var{sender} to folder @var{receiver}. @var{sender} must
+support the sender protocol while @var{receiver} must provide support for the receiver protocol.
+The default method moves all emails by using @code{move-message} for all messages in @var{sender}.
+@end deffn
+
+@deffn {generic function} copy-message-using-folders message sender receiver
+Copy an email from folder @var{sender} to folder @var{receiver}. @var{sender} must
+support the sender protocol while @var{receiver} must provide support for the receiver protocol.
+The default method copies the email by opening a storage stream to @var{receiver} using  
+@code{open-message-storing-stream} and a message input stream using @code{open-message-input-stream}.
+The message is then transfered byte by byte using Common Lisp I/O functions.
+@end deffn
+
+@deffn {generic function} delete-message-using-folders message folder
+Delete an email from @var{folder}
+@end deffn
+
+@deffn {generic function} move-message-using-folders message sender receiver
+Move an email from @var{sender} to @var{receiver}. The default implementation
+uses @code{copy-message-using-folders} and calls @code{delete-message} afterwards
+to delete @var{message} from @var{sender}.
+@end deffn
+
+@node Folder Metainformation Protocol
+@section Folder Metainformation Protocol
+
+@deffn {generic function} count-messages folder
+Returns how many messages are contained in @var{folder}
+@end deffn
+
+@deffn {generic function} messages folder
+Return all messages of @var{folder}.
+@end deffn
+
+@deffn {generic function} recent-messages folder
+Return all recent (new) messages of @var{folder}.
+If there are no new messages return nil. Default
+Implementation returns calls @code{messages} the first
+time the folder is accessed and returns always @code{nil}
+after that. 
+@end deffn
+
+@deffn {generic function} unread-messages folder
+Return all unread messages of @var{folder}.
+@end deffn
+
+@deffn {generic function} uids-valid-p folder
+Default implementation .
+@end deffn
+
+@node Message Metainformation Protocol
+@section Message Metainformation Protocol
+
+@node Folder Implementation Details
+@section Folder Implementation Details
+
+@menu
+* Maildir Folder::              
+* IMAP Folder::                 
+* POP3 Folder::                 
+* SMTP Relay Folder::           
+@end menu
+
+@node Maildir Folder
+@subsection Maildir Folder
+
+@node IMAP Folder
+@subsection IMAP Folder
+
+@node POP3 Folder
+@subsection POP3 Folder
+
+@node SMTP Relay Folder
+@subsection SMTP Relay Folder
+
