@@ -51,7 +51,7 @@
 ;;;;       Proc. 19'th Nat'l. Conf. of the ACM (Aug. 1964),D1.3-1-D1.3-11.
 ;;;;
 ;;;;
-;;;; Nürnberg, 01.Jul.2001 Jochen Schmidt
+;;;; Nuernberg, 01.Jul.2001 Jochen Schmidt
 
 (defpackage :smeta
   (:use #:common-lisp)
@@ -83,7 +83,7 @@
   (let ((char-sym (gensym)))
     `(when (< index end)
        (let ((,char-sym (char ,source-symbol index)))
-         (declare (base-char ,char-sym))
+         (declare (character ,char-sym))
          (when (typep ,char-sym ',x)
            (setq ,v ,char-sym) (incf index))))))
 
@@ -155,7 +155,7 @@
           (index ,start)
           (end ,(or end `(length ,source-symbol))))
      (declare (fixnum index end)
-              (type simple-base-string ,source-symbol))
+              (type string ,source-symbol))
      (macrolet ((match (x)
                        (sexpr-compileit x
                                   :meta-parser-type :string

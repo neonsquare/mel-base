@@ -53,6 +53,11 @@
 				   remote-port)
     (let ((stream (sb-bsd-sockets:socket-make-stream socket :input t :output t
 						     :element-type element-type
+						     #+sb-unicode :external-format 
+						     #+sb-unicode(if (subtypep element-type
+								   'character)
+							 :ascii
+						       *default*)
                                         ; :buffering :none
 						     )))
       stream)))

@@ -73,8 +73,8 @@
 
 		 (:file "package-tools")
 		 (:file "smeta")
-		 (:file "packages" :depends-on ("package-tools" "lisp-dep" "md5"))
-		 (:file "md5")
+		 (:file "packages" :depends-on ("package-tools" "lisp-dep" #-sbcl "md5"))
+		 #-sbcl (:file "md5")
 		 (:file "hmac-md5" :depends-on ("packages" #-sbcl "md5"))
 		 (:file "rfc2822" :depends-on ("packages" "smeta"))
 		 (:file "mime" :depends-on ("rfc2822"))

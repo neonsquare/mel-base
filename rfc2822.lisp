@@ -164,8 +164,7 @@
 
 (declaim (inline intern-header-name))
 (defun intern-header-name (string)
-  (declare #+lispworks(type simple-base-string string)
-	   #-lispworks (type string string)
+  (declare (type string string)
            (optimize (speed 3) (safety 0) (debug 0)))
   (intern (ecase (readtable-case *readtable*)
             (:upcase (string-upcase string))
@@ -205,10 +204,9 @@
 	    ))))
 
 (defun read-rfc2822-header (stream)
-  (let (fields (octets 0)
-        (field-name-buffer (make-array 2048 :element-type 'base-char :fill-pointer 0)))
-    (declare #+(or lispworks cmu)(type base-string field-name-buffer)
-	     #-(or lispworks cmu)(type string field-name-buffer)
+  (let ((octets 0) fields
+        (field-name-buffer (make-array 2048 :element-type 'character :fill-pointer 0)))
+    (declare (type string field-name-buffer)
              #-sbcl(dynamic-extent field-name-buffer))
     (handler-case
         (flet ((field-name-char-p (c)
@@ -843,7 +841,7 @@
     (let (last-result)
       (smeta:with-string-meta (buffer date)
 	(labels ((make-result ()
-		   (make-array 0 :element-type 'base-char :fill-pointer 0 :adjustable t))
+		   (make-array 0 :element-type 'character :fill-pointer 0 :adjustable t))
 		 (skip-day-of-week (&aux c)
 		   (declare (ignorable c))
 		   (smeta:match (:and (:while (:type alpha-char c)) (skip-delimiters))))
