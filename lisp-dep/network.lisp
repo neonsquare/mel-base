@@ -86,4 +86,7 @@
 #+openmcl
 (defun make-connection
   (&key (remote-host "localhost") (remote-port 0) (element-type '(unsigned-byte 8)))
-  (openmcl-socket:make-socket :element-type element-type :remote-host remote-host :remote-port remote-port))
+  (openmcl-socket:make-socket :format (if (subtypep element-type 'character)
+					  :text
+					:binary)
+			      :remote-host remote-host :remote-port remote-port))
