@@ -84,7 +84,7 @@
   (list message))
 
 (defclass multipart (part)
-  ((parts :accessor parts :initform nil :initarg :parts)))
+  ((parts :accessor %parts :initform nil :initarg :parts)))
 
 (defclass multipart/mixed (multipart)())
 (defclass multipart/alternative (multipart)())
@@ -125,11 +125,22 @@
     (:parallel 'multipart/parallel)
     (otherwise 'multipart)))
 
-(defmethod make-parts ((message bodystructure-mixin))
-  (make-parts-from-bodystructure message
-				  (bodystructure message)))
+(defmethod toplevel-part ((message bodystructure-mixin))
+  (or (cached-toplevel-part message)
+      (setf (cached-toplevel-part message)
+	    (make-toplevel-part message))))
 
-(defun make-parts-from-bodystructure (parent bodystructure &optional nth)
+(defmethod parts ((message mime-message))
+  (parts (toplevel-part message)))
+
+(defmethod parts ((message bodystructure-mixin))
+  (%parts message))
+
+(defmethod make-toplevel-part ((message bodystructure-mixin))
+  (make-toplevel-part-from-bodystructure message
+					 (bodystructure message)))
+
+(defun make-toplevel-part-from-bodystructure (parent bodystructure &optional nth)
   (etypecase (car bodystructure)
     (cons (let ((non-parts (member-if #'symbolp bodystructure))
 		(subparts (butlast bodystructure 4)))
@@ -142,9 +153,9 @@
 					 :subtype multipart-type
 					 :parameters parameters
 					 )))
-		(setf (parts part) (let ((i 0))
+		(setf (%parts part) (let ((i 0))
 				     (mapcar (lambda (p)
-					       (make-parts-from-bodystructure
+					       (make-toplevel-part-from-bodystructure
 						part p (incf i)))
 					     subparts)))
 		part))))
@@ -387,7 +398,7 @@
                    (otherwise (write-char c out))))))))
 
 (defun find-viewable-part (message)
-  (let ((parts (parts (make-parts message))))
+  (let ((parts (parts message)))
     ;; The viewable part of a message is either...
     (or ;; The first toplevel text part
         (find :text parts :key #'content-type)

@@ -34,7 +34,9 @@
 (defclass mime-body-mixin (rfc2822-basic-body-mixin) ())
 
 (defclass bodystructure-mixin ()
-  ((bodystructure :accessor bodystructure)))
+  ((bodystructure :accessor bodystructure)
+   (cached-toplevel-part :accessor cached-toplevel-part
+			 :initform nil)))
 
 (defclass mime-message (bodystructure-mixin mime-header-mixin mime-body-mixin message) ())
 
