@@ -368,20 +368,20 @@
 								    (if dot-atomp :dot-atom :atom)
 								    index start)))))))))))))))
 
-(defun accept-rfc2822-token 
-    (string expected-type 
-     &key (start 0) (end (length string))
-     (expected-value nil) (test #'equal))
-  (multiple-value-bind (token type new-index) 
-      (parse-rfc2822 string :start start :end end)
-    (if (and (eq type expected-type)
-             (or (not expected-value) (funcall test token expected-value)))
-      (values token new-index)
-      (values nil))))
-
 (defmethod token-type-test-function ((operation (eql 'or)) &rest args)
   (lambda (type)
     (find type args)))
+
+(defun accept-rfc2822-token 
+    (string expected-type 
+     &key (start 0) (end (length string))
+     (expected-value nil) (test #'equal) (type-test (lambda (type) (eq type expected-type))))
+  (multiple-value-bind (token type new-index) 
+      (parse-rfc2822 string :start start :end end)
+    (if (and (funcall type-test type)
+             (or (not expected-value) (funcall test token expected-value)))
+      (values token new-index)
+      (values nil))))
 
 (defun collect-all (string type 
 		    &key (start 0) (end (length string))
