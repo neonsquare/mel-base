@@ -727,9 +727,9 @@
    have relatively small array-dimension-limits"
 
   (dolist (message (messages source-folder))
-    (let ((sink (open-message-storing-stream sink-folder message)))
+    (with-open-file (sink (open-message-storing-stream sink-folder message))
       (let ((buffer (fetch-message source-folder (uid message))))
-	(write-sequence buffer sink)))))
+		(write-sequence buffer sink)))))
 
 (defmethod copy-folder ((source-folder folder) (sink-folder imap-folder))
   (cerror "Cancel copying of folder ~A to the imap folder ~A"
