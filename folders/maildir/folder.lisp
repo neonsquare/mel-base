@@ -343,7 +343,7 @@
     (not (when-let (new-change-tag (directory-contents-changed-p 
 				    (new-mail folder)
 				    change-tag))
-	   (setf change-tag new-change-tag)))))
+		   (setf change-tag new-change-tag)))))
 
 (defmethod map-recent-messages (fn (folder maildir-folder))
   (or (and (folder-recent-p folder)
@@ -402,7 +402,7 @@
   (declare (optimize (speed 0) (safety 3)))
   (or (and (folder-recent-p folder)
 	   (slot-boundp folder 'selected-messages)
-	   (map nil fn (selected-messages folder)))
+	   (progn (map nil fn (selected-messages folder)) (selected-messages folder)))
       (setf (selected-messages folder)
 	    (let ((messages nil))
 	      (flet ((push-message (file)
