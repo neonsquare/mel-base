@@ -727,7 +727,7 @@
    have relatively small array-dimension-limits"
 
   (dolist (message (messages source-folder))
-    (with-open-file (sink (open-message-storing-stream sink-folder message))
+    (with-open-stream (sink (open-message-storing-stream sink-folder message))
       (let ((buffer (fetch-message source-folder (uid message))))
 		(write-sequence buffer sink)))))
 
