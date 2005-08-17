@@ -163,7 +163,9 @@
 (define-pop3-command :rset (values))
 
 (define-pop3-command :quit
-  (setf (state folder) :disconnected)(values))
+  (setf (state folder) :disconnected)
+  (close (connection-stream folder))
+  (values))
 
 (define-pop3-command :list
   (cond ((null args) (with-open-stream (long (make-instance 'pop3-message-input-stream 
