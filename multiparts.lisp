@@ -133,7 +133,7 @@
 (defmethod parts ((message mime-message))
   (parts (toplevel-part message)))
 
-(defmethod parts ((message bodystructure-mixin))
+(defmethod parts ((message multipart))
   (%parts message))
 
 (defmethod make-toplevel-part ((message bodystructure-mixin))
