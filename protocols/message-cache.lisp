@@ -77,5 +77,5 @@
       (setf (gethash uid (message-cache folder)) (call-next-method))))
 
 ;; folder-protocol
-(defmethod close-folder ((folder hash-table-message-cache-mixin))
+(defmethod close-folder :after ((folder hash-table-message-cache-mixin))
   (clrhash (message-cache folder)))
