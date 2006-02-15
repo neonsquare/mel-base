@@ -62,3 +62,23 @@
                   (t (warn "Illegal quoted printable"))))
         (end-of-file () (error "Unexpected end of file")))
       c))))
+
+(defun decode-quoted-printable (qp)
+  (with-input-from-string (s qp)
+    (with-open-stream (in (make-instance 'quoted-printable-input-stream
+                                         :octet-count (length qp)
+                                         :input-stream s))
+      (with-output-to-string (out)
+        (loop for c = (read-char in nil :eof)
+              until (eq c :eof)
+              do (write-char c out))))))
+
+(defun decode-quoted-printable-header (string)
+  (if (and (> (length string) 2)
+           (eql (char string 0) #\=)
+           (eql (char string 1) #\?))
+      (let* ((start (search "?Q?" string))
+             (end (search "?=" string :start1 0 :start2 start))
+             (encoded (subseq string (+ start 3) end)))
+        (decode-quoted-printable encoded))
+      string))
