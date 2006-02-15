@@ -133,6 +133,9 @@
 (defmethod parts ((message mime-message))
   (parts (toplevel-part message)))
 
+(defmethod parts ((message simple-part))
+  (list message))
+
 (defmethod parts ((message multipart))
   (%parts message))
 
