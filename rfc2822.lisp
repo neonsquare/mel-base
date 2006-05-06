@@ -773,7 +773,7 @@
       (if (rest list)
 	  (loop for item in (butlast list)
 		do (princ item stream) (write-string separator stream)
-		finally (princ item stream))
+		finally (princ (car (last list)) stream))
 	 (princ (first list) stream))
     (princ list stream)))
 
