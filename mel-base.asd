@@ -53,11 +53,11 @@
 		 (:module "lisp-dep"
 			  :components
 			  ((:file "packages")
-			   #+openmcl (:file "openmcl-fixes")
+			   #+openmcl (:file "openmcl-fixes" :depends-on ("packages"))
 			   (:file "files" :depends-on ("packages"))
 			   (:file "filesystem" :depends-on ("files" "packages"))
 			   (:file "unix" :depends-on ("packages" "utils"))
-			   (:file "environment" :depends-on ("packages"))
+			   (:file "environment" :depends-on ("packages" #+openmcl "openmcl-fixes"))
 			   (:file "network" :depends-on ("packages"))
 			   (:file "utils" :depends-on ("packages"))))
 
