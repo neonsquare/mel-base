@@ -301,10 +301,10 @@
           (let ((*imap-read-case* (if (eq :+ tag) :preserve :keyword)))
             (loop for form = (imap-read stream)
                   do (push form result))))
-            (end-of-imap-response () (let ((result (nreverse result)))
-                                       (if *imap-debug*
-                                           (print result)
-                                         result))))))
+      (end-of-imap-response () (let ((result (nreverse result)))
+				 (if *imap-debug*
+				     (print result)
+				     result))))))
 
 (defun skip-responses (stream)
   (loop for response = (read-response stream)

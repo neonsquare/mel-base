@@ -31,7 +31,7 @@
 (defpackage :mel.gray-stream
   (:use :cl)
   (:import-from #+lispworks :stream #+cmu :lisp #+clisp :gray #+cormanlisp :gray-streams
-                #+mcl :ccl #+allegro :excl #+sbcl :sb-gray #+abcl :gray-streams
+                #+openmcl :ccl #+mcl :ccl #+allegro :excl #+sbcl :sb-gray #+abcl :gray-streams
                 #:fundamental-binary-input-stream
                 #:fundamental-binary-output-stream
                 #:fundamental-character-input-stream

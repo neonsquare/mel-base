@@ -44,7 +44,8 @@
 				    'string
 				    (pathname-name file)
 				    "."
-				    (pathname-type file))))))))))
+				    (pathname-type file)))))))
+	 (directory files))))
 
 #+(and lispworks unix)
 (defun map-directory (fn directory)
@@ -53,7 +54,7 @@
 			       (unless (char= #\. (char file 0))
 				 (funcall fn (copy-seq file))))))
 
-#-(or cmu sbcl (and lispworks unix))
+#-(or cmu sbcl clisp (and :lispworks (or :unix :macosx)))
 (defun map-directory (fn directory)
   (map nil (lambda (file)
 	     (let ((name (pathname-name file))

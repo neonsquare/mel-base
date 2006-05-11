@@ -33,7 +33,7 @@
 (in-package :mel.system)
 
 (defsystem mel-base
-    :version "0.5"
+    :version "0.7.0"
     :components ((:module "folders"
 			  :depends-on 
 			  ("protocols"
@@ -53,6 +53,7 @@
 		 (:module "lisp-dep"
 			  :components
 			  ((:file "packages")
+			   #+openmcl (:file "openmcl-fixes")
 			   (:file "files" :depends-on ("packages"))
 			   (:file "filesystem" :depends-on ("files" "packages"))
 			   (:file "unix" :depends-on ("packages" "utils"))

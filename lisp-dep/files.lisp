@@ -57,8 +57,8 @@
                      (d_type (:unsigned :char))
                      (d_name (:c-array :char 256)))
 
-;; Oops I re
-#+(and :lispworks :unix :macosx)
+
+#+(and :lispworks :macosx)
 (fli:define-c-struct (dirent (:foreign-name "dirent"))
                      (d_fileno --ino-t)
                      (d_reclen (:unsigned :short))
@@ -74,35 +74,35 @@
 (defconstant +ENOMEM+ 12)  ; Insufficient memory to complete the operation.
 (defconstant +ENOTDIR+ 20) ; name is not a directory.
 
-#+(and :lispworks :unix)
+#+(and :lispworks (or :unix :macosx))
 (fli:define-foreign-function (c-opendir "opendir" :source)
     ((--name (:reference :ef-mb-string)))
   :result-type :pointer :language :c)
 
-#+(and :lispworks :unix)
+#+(and :lispworks (or :unix :macosx))
 (fli:define-foreign-function (c-closedir "closedir" :source)
     ((--dirfd :pointer))
   :result-type :int :language :c)
 
-#+(and :lispworks :unix)
+#+(and :lispworks (or :unix :macosx))
 (fli:define-foreign-function (c-readdir "readdir" :source)
     ((--dirfd :pointer))
   :result-type (:pointer (:struct dirent)) :language :c)
 
-#+(and :lispworks :unix)
+#+(and :lispworks (or :unix :macosx))
 (defclass directory-iterator ()
   ((directory-pathname :accessor directory-pathname :initarg :pathname)
    dirfd
    (current-entry :accessor current-entry :initform (make-array 256 :element-type 'base-char :fill-pointer 0))))
 
-#+(and :lispworks :unix)
+#+(and :lispworks (or :unix :macosx))
 (defmethod open-directory ((dir directory-iterator))
   (setf (slot-value dir 'dirfd) (c-opendir (directory-pathname dir)))
   (read-next-dirent dir) ; "."
   (read-next-dirent dir) ; ".."
   dir)
 
-#+(and :lispworks :unix)
+#+(and :lispworks (or :unix :macosx))
 (defun read-next-dirent (dir)
   (let ((dirent (c-readdir (slot-value dir 'dirfd))))
     (unless (fli:null-pointer-p dirent)
@@ -114,7 +114,7 @@
               do (vector-push c (current-entry dir))))
       t)))
 
-#+(and :lispworks :unix)
+#+(and :lispworks (or :unix :macosx))
 (defun fast-map-directory (dir fn)
   (unless (stringp dir) (setf dir (namestring dir)))
   (let ((cursor (open-directory (make-instance 'directory-iterator :pathname (string dir)))))
@@ -128,14 +128,14 @@
     #+lispworks (directory wildspec :test (complement #'lw:file-directory-p))
     #+allegro (remove-if #'excl:file-directory-p (directory wildspec))
     #+openmcl (directory wildspec :directories nil :files t)
-    #-(or lispworks allegro) (remove-if #'null (directory wildspec) :key #'pathname-name)))
+    #-(or lispworks allegro openmcl) (remove-if #'null (directory wildspec) :key #'pathname-name)))
 
 (defun list-directories (pathspec)
   (let ((wildspec (make-pathname :name :wild :type :wild :defaults pathspec)))
     #+lispworks (directory wildspec :test #'lw:file-directory-p)
     #+allegro (remove-if-not #'excl:file-directory-p (directory wildspec))
     #+openmcl (directory wildspec :directories t :files nil)
-    #-(or lispworks allegro) (remove-if-not #'null (directory wildspec) :key #'pathname-name)))
+    #-(or lispworks allegro openmcl) (remove-if-not #'null (directory wildspec) :key #'pathname-name)))
 
 (defun map-files (fn pathspec &key (test (constantly t))(recursivep nil))
   (dolist (f (list-files pathspec))

@@ -74,7 +74,7 @@
 (defun gethostname ()
   "Returns the hostname"
   (ccl::%stack-block ((resultbuf 256))  
-    (if (zerop (#_gethostname resultbuf 256))
+    (if (zerop (c-gethostname resultbuf 256))
 	(ccl::%get-cstring resultbuf)
 	(error "gethostname() failed."))))
 
