@@ -293,6 +293,8 @@
 (define-field-writer subject :subject (message)
   subject)
 
+(defconstant +vt+ (code-char 11))
+
 ;;; rfc2822 scanner
 (defun parse-rfc2822 
        (string &key (start 0) (end (length string)) (ignore-comments t) (ignore-space t) (split-atoms nil))
@@ -320,9 +322,9 @@
                    (when (and (or (<= 0 code 31)(= code 127))(not (= code 9))(not (= code 11)))
                      (return-from parse-rfc2822 (values c :control (1+ index) start))))
                  (case c
-                   ((#\space #\tab #-(or abcl openmcl) #\vt) (loop (let ((c (get-char)))
+                   ((#\space #\tab +vt+) (loop (let ((c (get-char)))
                                                  (case c
-                                                   ((#\space #\tab #-(or abcl openmcl) #\vt) nil)
+                                                   ((#\space #\tab +vt+) nil)
                                                    (:epsilon (return (if ignore-space (values nil :epsilon index start)
                                                                        (values " " :space index start))))
                                                    (otherwise (when ignore-space (setf start index)(backtrack))

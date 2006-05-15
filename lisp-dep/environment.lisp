@@ -56,20 +56,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; GETHOSTNAME Getting the name of the host ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#+(and unix #.(cl:if (cl:find-package "UFFI") '(and) '(or)))
-(uffi:def-function ("gethostname" c-gethostname)
-		   ((name (* :unsigned-char))
-		    (len :int))
-		   :returning :int)
 
-#+(and unix #.(cl:if (cl:find-package "UFFI") '(and) '(or)))
-(defun gethostname ()
-  "Returns the hostname"
-  (uffi:with-foreign-object (name '(:array :unsigned-char 256))
-    (if (zerop (c-gethostname (uffi:char-array-to-pointer name) 256))
-	(uffi:convert-from-foreign-string name)
-	(error "gethostname() failed."))))
-
+;; Host CL implementations
 #+openmcl
 (defun gethostname ()
   "Returns the hostname"
@@ -78,10 +66,48 @@
 	(ccl::%get-cstring resultbuf)
 	(error "gethostname() failed."))))
 
-#+clisp
+#+(and clisp unix)
 (defun gethostname ()
   (posix:uname-nodename (posix:uname)))
 
-#+(or (not unix) #.(cl:if (cl:find-package "UFFI") '(or) '(and)))
+#+(and :clisp :win32)
+(ffi:def-call-out c-gethostname
+    (:name \"gethostname\")
+    (:arguments
+        (name (ffi:c-ptr
+            (ffi:c-array-max ffi:char 256)) :out :alloca)
+        (len ffi:int))
+    (:language :stdc)
+    (:return-type ffi:int)
+    (:library "wsock32.dll"))
+	
+#+(and :clisp :win32)
+(defun gethostname ()
+    "Returns the hostname"
+    (multiple-value-bind (success name) (c-gethostname 256)
+        (if (zerop success)
+                 (ext:convert-string-from-bytes name
+custom:*FOREIGN-ENCODING*)
+            (error (strerr errno)))))
+
+;; UFFI Implementation
+#+(or (not (or clisp openmcl))
+       (and unix #.(cl:if (cl:find-package "UFFI") '(and) '(or))))
+(uffi:def-function ("gethostname" c-gethostname)
+    ((name (* :unsigned-char))
+     (len :int))
+  :returning :int)
+
+#+(or (not (or clisp openmcl))
+       (and unix #.(cl:if (cl:find-package "UFFI") '(and) '(or))))
+(defun gethostname ()
+  "Returns the hostname"
+  (uffi:with-foreign-object (name '(:array :unsigned-char 256))
+    (if (zerop (c-gethostname (uffi:char-array-to-pointer name) 256))
+	(uffi:convert-from-foreign-string name)
+	(error "gethostname() failed."))))
+
+;; If no GETHOSTNAME is yet defined - generate a dummy stub
+#+#. (cl:if (cl:fboundp 'gethostname) '(and) '(or))
 (defun gethostname ()
   "localhost")
