@@ -37,10 +37,10 @@
 #+(and unix #.(cl:if (cl:find-package "UFFI") '(and) '(or)))
 (uffi:def-function "getpid" ():returning :int)
 
-#+(and #.(cl:if (cl:find-package "UFFI") '(or) '(and)))
+#-#.(cl:if (cl:find-package "UFFI") '(and) '(or))
 (defun getpid ()
-#+(and clisp #.(cl:if (cl:find-package "LINUX") '(and) '(or)))
-(linux:getpid)
+#+clisp
+(system:process-id)
 #+(and lispworks unix)
 (system::getpid)
 #+(and sbcl unix)
@@ -49,8 +49,9 @@
 (unix:unix-getpid)
 #+openmcl
 (ccl::getpid)
-
-#+(not unix)
+#+(or (and lispworks (not unix))
+      (and sbcl (not unix))
+      (not (or clisp openmcl)))
 (random 10000))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -66,7 +67,7 @@
 	(ccl::%get-cstring resultbuf)
 	(error "gethostname() failed."))))
 
-#+(and clisp unix)
+#+(And clisp unix)
 (defun gethostname ()
   (posix:uname-nodename (posix:uname)))
 
@@ -91,14 +92,13 @@ custom:*FOREIGN-ENCODING*)
             (error (strerr errno)))))
 
 ;; UFFI Implementation
-#+(or (not (or clisp openmcl))
-       (and unix #.(cl:if (cl:find-package "UFFI") '(and) '(or))))
+#+(and (not (or clisp openmcl)) unix #.(cl:if (cl:find-package "UFFI") '(and) '(or)))
 (uffi:def-function ("gethostname" c-gethostname)
     ((name (* :unsigned-char))
      (len :int))
   :returning :int)
 
-#+(or (not (or clisp openmcl))
+#+(and (not (or clisp openmcl))
        (and unix #.(cl:if (cl:find-package "UFFI") '(and) '(or))))
 (defun gethostname ()
   "Returns the hostname"
@@ -109,5 +109,7 @@ custom:*FOREIGN-ENCODING*)
 
 ;; If no GETHOSTNAME is yet defined - generate a dummy stub
 #+#. (cl:if (cl:fboundp 'gethostname) '(and) '(or))
+(progn
+  (warn "Uses dummy GETHOSTNAME function - try loading UFFI before compiling mel-base")
 (defun gethostname ()
-  "localhost")
+  "localhost"))
