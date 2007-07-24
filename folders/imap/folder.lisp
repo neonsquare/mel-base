@@ -556,7 +556,7 @@
 (defmethod update-mailbox ((folder imap-folder) callback)
   (let ((non-recent (hash-table-count (message-cache folder)))
 	(exists (count-messages folder)))
-    (cond ((> exists non-recent)
+    (cond ((/= exists non-recent)
 	   (clrhash (size-table folder))
 	   (ensure-connection folder)
 	   
