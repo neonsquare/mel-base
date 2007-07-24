@@ -874,7 +874,9 @@
 											  (#\+ -1)
 											  (#\- 1)))
 						      (integer) (setf zone (* zone last-result)))
-						(:and (word) (setf zone 0)))))
+						(:and (word) (setf zone 0))
+                                                ;; some mailers (esp hotmail around 2001) don't set zones.
+                                                (setf zone 0))))
 					; (values seconds minutes hours day month)
 			(multiple-value-bind (h m) (floor zone 100)
 			  (unless (and (< -24 h +24)
