@@ -608,9 +608,7 @@
 (defmethod fetch-all-message-headers ((folder imap-folder))
   (send-command folder "~A fetch 1:* (UID BODY[HEADER])"
 	    "HEADER" #\return #\linefeed)
-  (let (result)
-    (process-response folder :on-header (lambda (header) (setf result header)))
-    nil))
+    (process-response folder :on-header (lambda (header) (declare (ignore header)))))
 
 
 (defmethod fetch-message-bodystructure ((folder imap-folder) uid)
