@@ -35,7 +35,7 @@
 (defparameter *message-counter* 0)
 
 (defun generate-message-id ()
-  (format nil "~D~D~D@~A" 
+  (format nil "<~D~D~D@~A>" 
           (mel.unix:universal-to-unix-time (get-universal-time))
           (mel.environment:getpid)
 	  (incf *message-counter*)
