@@ -273,22 +273,23 @@
 	  (push (cons ,field-name (concatenate 'string " " string-values)) header-fields))
       (setf (header-fields ,message) header-fields))))
 
+(defun clean-header-field (string)
+  (string-trim '(#\space #\tab #\return #\linefeed) string))
 
 (define-field-reader message-id :message-id (message)
-  (string-trim '(#\space #\tab #\return #\linefeed) message-id))
+  (clean-header-field message-id))
 
 (define-field-writer message-id :message-id (message)
    message-id)
 
 (define-field-reader date :date (message)
-  (let ((date (string-trim '(#\space) date)))
-    (date-to-universal-time date)))
+  (date-to-universal-time (clean-header-field date)))
 
 (define-field-writer date :date (message)
   (universal-time-to-date date))
 
 (define-field-reader subject :subject (message)
-  (string-trim '(#\space #\tab) subject))
+  (clean-header-field subject))
 
 (define-field-writer subject :subject (message)
   subject)
@@ -704,42 +705,36 @@
 (defmethod print-object ((object invalid-address) stream)
   (if *print-escape*
       (print-unreadable-object (object stream :type t :identity t)
-	(with-slots (port) object
-	  (if (and (slot-boundp object 'display-name)
-		   (display-name object))
-	      (format stream "~A" (display-name object))
-	      (write-string "invalid address" stream))))
-      (with-slots (port) object
-	(if (and (slot-boundp object 'display-name)
-		 (display-name object))
-	    (format stream "~A" (display-name object))
-	    (write-string "invalid address" stream)))))
+        (if (and (slot-boundp object 'display-name)
+                 (display-name object))
+            (format stream "~A" (display-name object))
+            (write-string "invalid address" stream)))
+      (if (and (slot-boundp object 'display-name)
+               (display-name object))
+          (format stream "~A" (display-name object))
+          (write-string "invalid address" stream))))
 
 (defmethod print-object ((object mailbox-address) stream)
   (if *print-escape*
       (print-unreadable-object (object stream :type t :identity t)
-	(with-slots (port) object
-	  (if (and (slot-boundp object 'display-name)
-		   (display-name object))
-	      (format stream "~A <~A>" (display-name object) (address-spec object))
-	      (format stream "<~A>" (address-spec object)))))
-      (with-slots (port) object
-	(if (and (slot-boundp object 'display-name)
-		 (display-name object))
-	    (format stream "~A <~A>" (display-name object) (address-spec object))
-	    (format stream "<~A>" (address-spec object))))))
+        (if (and (slot-boundp object 'display-name)
+                 (display-name object))
+            (format stream "~A <~A>" (display-name object) (address-spec object))
+            (format stream "<~A>" (address-spec object))))
+      (if (and (slot-boundp object 'display-name)
+               (display-name object))
+          (format stream "~A <~A>" (display-name object) (address-spec object))
+          (format stream "<~A>" (address-spec object)))))
 
 (defmethod print-object ((object group-address) stream)
   (if *print-escape*
       (print-unreadable-object (object stream :type t :identity t)
-	(with-slots (port) object
-	  (if (slot-boundp object 'display-name)
-	      (format stream "~A:~A~{,~A~};" (display-name object) (first (mailbox-list object)) (rest (mailbox-list object)))
-	      (format stream "anonymous:~A~{,~A~};"  (first (mailbox-list object)) (rest (mailbox-list object))))))
-      (with-slots (port) object
-	  (if (slot-boundp object 'display-name)
-	      (format stream "~A:~A~{,~A~};" (display-name object) (first (mailbox-list object)) (rest (mailbox-list object)))
-	      (format stream "anonymous:~A~{,~A~};"  (first (mailbox-list object)) (rest (mailbox-list object)))))))
+        (if (slot-boundp object 'display-name)
+            (format stream "~A:~A~{,~A~};" (display-name object) (first (mailbox-list object)) (rest (mailbox-list object)))
+            (format stream "anonymous:~A~{,~A~};"  (first (mailbox-list object)) (rest (mailbox-list object)))))
+      (if (slot-boundp object 'display-name)
+          (format stream "~A:~A~{,~A~};" (display-name object) (first (mailbox-list object)) (rest (mailbox-list object)))
+          (format stream "anonymous:~A~{,~A~};"  (first (mailbox-list object)) (rest (mailbox-list object))))))
 
 
 (defun parse-rfc2822-address (string)
@@ -801,7 +796,7 @@
 ;;; Date & Times
 ;;;
 
-(eval-when (:compile-toplevel :execute)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 ;  (meta:enable-meta-syntax)
 (deftype alpha-char () '(and character (satisfies alpha-char-p)))
 (deftype %digit-char () '(and character (satisfies digit-char-p)))
