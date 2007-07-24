@@ -85,13 +85,11 @@
 				
 				(push (cons 
 				       (keyword (subseq string (1+ start) del))
-				       (let ((value (apply #'subseq string (1+ del) 
-							   (if next (list next)))))
-					     (accept-rfc2822-token (apply #'subseq string 
-									  (1+ del)
-									  (if next (list next)))
-								   nil
-								   :type-test (mel.mime::token-type-test-function 'or :atom :dot-atom :quoted-string))))
+                                       (accept-rfc2822-token (apply #'subseq string 
+                                                                    (1+ del)
+                                                                    (if next (list next)))
+                                                             nil
+                                                             :type-test (mel.mime::token-type-test-function 'or :atom :dot-atom :quoted-string)))
 				      result))))
 		       finally (return result))))
             (values (keyword (subseq type/subtype 0 delimiter))

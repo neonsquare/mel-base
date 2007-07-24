@@ -294,8 +294,8 @@
 
 (defun read-single-body (part stream)
   (let ((octets 0)
-	(lines 0) line line-octets line-end-p)
-	(loop (multiple-value-setq (line line-octets line-end-p)
+	(lines 0) line line-octets)
+	(loop (multiple-value-setq (line line-octets)
 		(read-line-counted stream nil stream))
 	      (when (eq stream line)
 		  (incf lines)
@@ -313,6 +313,7 @@
 	result))))
 
 (defmethod compute-bodystructure-using-folder (folder (message bodystructure-mixin))
+  (declare (ignore folder))
   (with-open-stream (stream (message-body-stream message))
     (if (eq :multipart (content-type message))
 	(read-multipart-body-1 message stream)

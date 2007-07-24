@@ -91,7 +91,7 @@
             (temporary-mail folder) (truename (temporary-mail folder))))
     folder))
 
-(defmethod make-maildir-folder (pathname &rest args &key (if-does-not-exist :error) (line-terminator-style nil) &allow-other-keys)
+(defmethod make-maildir-folder (pathname &key (if-does-not-exist :error) (line-terminator-style nil) &allow-other-keys)
   (make-instance 'maildir-folder :name pathname :if-does-not-exist if-does-not-exist :line-terminator-style line-terminator-style))
 
 #+nil

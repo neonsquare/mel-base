@@ -58,6 +58,7 @@
   #+sbcl (sb-posix:stat-atime (%stat stat))
   #+cmu (nth-value 9 (unix:unix-stat (ext:unix-namestring stat)))
   #+clisp (posix:file-stat-atime (%stat stat))
+  #+openmcl (declare (ignore stat))
   #+openmcl nil)
 
 (defun stat-last-change (stat)
@@ -65,6 +66,7 @@
   #+sbcl (sb-posix:stat-ctime (%stat stat))
   #+cmu (nth-value 11 (unix:unix-stat (ext:unix-namestring stat)))
   #+clisp (posix:file-stat-ctime (%stat stat))
+  #+openmcl (declare (ignore stat))
   #+openmcl nil)
 
 (defun stat-last-modify (stat)
@@ -72,8 +74,7 @@
   #+sbcl (sb-posix:stat-mtime (%stat stat))
   #+cmu (nth-value 10 (unix:unix-stat (ext:unix-namestring stat)))
   #+clisp (posix:file-stat-mtime (%stat stat))
-  #+openmcl (multiple-value-bind (succ mode size mtime inode uid)
-		(ccl::%stat stat) mtime))
+  #+openmcl (nth-value 3 (ccl::%stat stat)))
 
 (defun stat (filename)
   (values t

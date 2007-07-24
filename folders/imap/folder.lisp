@@ -452,6 +452,7 @@
   (process-response 
    sink-folder 
    :on-continuation (lambda (arg1 arguments)
+                      (declare (ignore arguments))
                       (let ((timestamp (map 'string #'code-char (mel.mime::decode-base64 arg1))))
                         (format t "(Challenge) ~A~%" timestamp)
                         (let ((username (mel.cipher:string-to-octets (format nil "~A " (username sink-folder))))
@@ -500,10 +501,9 @@
 
 (defmethod ensure-connection ((folder imap-folder))
   (when (eq (state folder) :disconnected)
-    (with-slots (username password host port mailbox) folder
-      (setf (connection folder) (make-imap-connection folder))
-      (setf (state folder) :connected)
-      (select-mailbox folder)))
+    (setf (connection folder) (make-imap-connection folder))
+    (setf (state folder) :connected)
+    (select-mailbox folder))
   (handler-case
       (connection folder)
     (cl:end-of-file () (setf (state folder) :disconnected)
@@ -698,7 +698,19 @@
     stream))
 
 ;;; Folder Protocol Support
-      
+
+(defmethod copy-message-using-folders :around ((message message) (message-folder imap-folder) (sink-folder imap-folder))
+  "Copy a message between two imap folders. We can optimize this case if the folders are on the same server."
+  (if (and (equal (host message-folder) (host sink-folder))
+           (equal (username message-folder) (username sink-folder))
+           (equal (password message-folder) (password sink-folder))
+           (equal (imap-port message-folder) (imap-port sink-folder)))
+      (progn
+        (send-command message-folder "~A uid copy ~A ~A" "UID" (uid message) (mailbox sink-folder))
+        (process-response message-folder :on-uid (lambda (m) m)))
+      ;; if we're not using the same server, play it safe
+      (call-next-method)))
+
 (defmethod map-messages (fn (folder imap-folder))
   (update-mailbox folder fn))
 
@@ -800,10 +812,13 @@
       (:cur nil))))
 
 (defmethod mark-message-using-folder ((folder imap-folder) message (flag (eql :recent)))
+  (declare (ignore message))
   (cerror "Continue without setting the RECENT flag" "It is not possible to modify the RECENT flag manually"))
 
 (defmethod unmark-message-using-folder ((folder imap-folder) message (flag (eql :recent)))
-  #+nil(cerror "Continue without unsetting the RECENT flag" "It is not possible to modify the RECENT flag manually"))
+  (declare (ignore message))
+  #+nil
+  (cerror "Continue without unsetting the RECENT flag" "It is not possible to modify the RECENT flag manually"))
 
 ;; Sender Protocol
 

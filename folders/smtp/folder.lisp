@@ -125,6 +125,7 @@
     stream))
 
 (defmethod open-message-storing-stream :around ((folder smtp-relay-folder) message)
+  (declare (ignore message))
   (call-next-method))
 
 ;; Internals ;;
@@ -255,7 +256,7 @@
     (:quit "QUIT")
     (:auth "AUTH")))
 
-(defmethod validate-command-in-state (cmd state)
+(defmethod validate-command-in-state ((cmd t) (state t))
   t)
 
 (defmethod send-smtp-command :around ((connection smtp-folder) cmd &rest args)
@@ -270,7 +271,7 @@
 
 (defmacro define-smtp-command (cmd &body body)
   `(defmethod send-smtp-command ((folder smtp-folder) (cmd (eql ,cmd)) &rest args)
-    #+cmu(declare (ignorable args))
+     (declare (ignorable args))
      (multiple-value-bind (reply severity category responses)
 	 (read-smtp-response (connection-stream folder))
        (case severity

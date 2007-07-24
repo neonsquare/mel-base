@@ -157,6 +157,7 @@
     (format stream "--~A--~A~A"  boundary-tag #\return #\linefeed)))
 
 (defmethod open-message-input-stream-using-folder ((folder pathname) (message message) start)
+  (declare (ignore start))
   (open folder :direction :input))
 
 (defmethod ensure-headers-read ((folder pathname) (message message))

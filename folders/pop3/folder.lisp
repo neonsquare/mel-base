@@ -130,7 +130,7 @@
 
 (defmacro define-pop3-command (cmd &body body)
   `(defmethod send-pop3-command ((folder pop3-folder) (cmd (eql ,cmd)) &rest args)
-    #+cmu(declare (ignorable args))
+     (declare (ignorable args))
      (multiple-value-bind (state response) 
 	 (parse-pop3-response (read-delimited-line (connection-stream folder)))
        (ecase state
@@ -224,9 +224,11 @@
 			    :end (input-buffer-limit stream)))
 
 (defmethod (setf state) :before (new-value (stream pop3-message-input-stream))
+  (declare (ignore new-value))
   (push (stream-state stream) (last-state stream)))
 
 (defmethod mel.gray-stream:stream-unread-char :after ((stream pop3-message-input-stream) character)
+  (declare (ignore character))
   (setf (stream-state stream) (pop (last-state stream))))
 
 (defmethod mel.gray-stream::stream-peek-char ((stream pop3-message-input-stream))
