@@ -75,7 +75,8 @@
   (let ((eis (encapsulated-output-stream stream)))
     (case  character 
       (#\newline (write-char #\return eis))
-      (#\linefeed nil)
+      ;; on openmcl newline and linefeed are the same character
+      #-openmcl (#\linefeed nil)
       (otherwise (write-char character eis)))))
 
 (defmethod mel.gray-stream:stream-write-char ((stream rfc-line-terminator-output-stream) character)
@@ -83,5 +84,6 @@
     (case character
       (#\newline (write-char #\return eis) (write-char #\linefeed eis))
       (#\return nil)
-      (#\linefeed nil)
+      ;; on openmcl newline and linefeed are the same character
+      #-openmcl(#\linefeed nil)
       (otherwise (write-char character eis)))))
