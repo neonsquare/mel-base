@@ -55,6 +55,7 @@
 
 (defmethod copy-message-using-folders :before ((message message) message-folder (sink-folder folder))
   "Check if folders are really different"
+  (declare (ignore message-folder))
   (when (eq sink-folder (folder message))
     (error "Cannot copy message into its own folder")))
 
@@ -99,6 +100,7 @@
 
 (defmethod move-message-using-folders :around ((message message) message-folder (sink-folder folder))
   "Set message folder"
+  (declare (ignore message-folder))
   (let ((uid (call-next-method)))
     (setf (folder message) sink-folder
 	  (uid message) uid)

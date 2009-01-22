@@ -59,6 +59,7 @@
                                :test #'uid=))))
 
 (defmethod map-recent-messages :around (fn (folder basic-folder))
+  (declare (ignore fn))
   (map nil (lambda (m) (unmark-message m :recent))
        (call-next-method)))
 
