@@ -543,7 +543,9 @@
   (when (eq (state folder) :connected)
     (send-command folder "c1 close")
     (process-response folder)
-    (setf (state folder) :disconnected)))
+    (setf (state folder) :disconnected)
+    ;; Added by KTR on 07/17/2008 to close the network connection
+    (close (connection folder))))
 
 (defun examine-mailbox (folder)
   (send-command folder "~A select ~A" "t01" (mailbox folder))
