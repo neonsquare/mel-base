@@ -49,7 +49,7 @@
 #+(and :lispworks :unix)
 (fli:define-c-typedef (--off-t (:foreign-name "__off_t")) :long)
 
-#+(and :lispworks :unix)
+#+(and :lispworks :unix (not :macosx))
 (fli:define-c-struct (dirent (:foreign-name "dirent"))
                      (d_ino --ino-t)
                      (d_off --off-t)
