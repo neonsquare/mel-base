@@ -105,7 +105,10 @@
 	collect (subseq string start end)
 	unless end do (loop-finish)))
 
-(defun parse-mime-table (&optional (file "/etc/mime.types"))
+(defvar *mime-types-file* (or (probe-file "/etc/mime.types")
+                              (probe-file (merge-pathnames "mime.types" *load-truename*))))
+
+(defun parse-mime-table (&optional (file *mime-types-file*))
   (with-open-file (s file :direction :input)
     (loop for line = (read-line s nil nil)
 	  while line
@@ -119,15 +122,17 @@
 			(first tokens)))))
 
 (defparameter *mime-table* 
-  #+(and unix (not (or macosx darwin)))
-  (parse-mime-table) 
-  #-(and unix (not (or macosx darwin))) nil)
+  (if *mime-types-file*
+    (parse-mime-table *mime-types-file*) 
+    nil))
 
 (defun guess-content-type (file)
   (let ((pathname-type (pathname-type file :case :common)))
+    (or
     (cdr (find-if (lambda (item)
 	       (member pathname-type (car item) :test #'equalp))
-	    *mime-table*))))
+                   *mime-table*))
+     "application/octet-stream")))
 
 (defun make-multipart-body (message files body stream)
   (let ((boundary-tag (make-boundary-tag)))
