@@ -80,9 +80,6 @@
 
 (defgeneric parts (message))
 
-(defmethod parts ((message simple-part))
-  (list message))
-
 (defclass multipart (part)
   ((parts :accessor %parts :initform nil :initarg :parts)))
 
