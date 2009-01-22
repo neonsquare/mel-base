@@ -882,7 +882,7 @@
 			  (unless (and (< -24 h +24)
 				       (< -60 m +60)) (setf h 0 m 0))
 			  (encode-universal-time seconds minutes hours day
-						 (match-month month)
+						 (match-month (string-capitalize month))
 						 year (+ h (/ m 60))))
 			)))
 	  (date))))))
