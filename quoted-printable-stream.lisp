@@ -71,7 +71,7 @@
       (with-output-to-string (out)
         (loop for c = (read-char in nil :eof)
               until (eq c :eof)
-              do (write-char c out))))))
+              do (when c (write-char c out)))))))
 
 (defun decode-quoted-printable-header (string)
   (if (and (> (length string) 2)
