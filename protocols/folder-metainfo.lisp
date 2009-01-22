@@ -55,8 +55,8 @@
        (declare (ignore uid))
        (push message non-recent-messages))
      folder)
-    (set-difference all-messages non-recent-messages
-		    :test #'uid=)))
+    (mapcar fn (set-difference all-messages non-recent-messages
+                               :test #'uid=))))
 
 (defmethod map-recent-messages :around (fn (folder basic-folder))
   (map nil (lambda (m) (unmark-message m :recent))
