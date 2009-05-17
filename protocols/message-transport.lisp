@@ -78,7 +78,7 @@
     (with-open-stream (sink (open-message-storing-stream sink-folder message))
       (let ((buffer (make-array 8192 :element-type 'base-char)))
 	(declare #-(or sbcl cmu)(dynamic-extent buffer)
-		 (type simple-base-string buffer))
+		 (type string buffer))
 	(loop for count of-type fixnum = (read-sequence buffer source :start 0 :end 8192)
 	  until (zerop count)
 	  do 

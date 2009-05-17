@@ -213,7 +213,7 @@
 (declaim (inline uidify))
 (defun uidify (file)
   (declare (optimize (speed 3) (safety 0))
-           (type simple-base-string file))
+           (type string file))
   (let ((uid-end (position #\: file :from-end t)))
     (if uid-end
       (subseq file 0 uid-end)
@@ -222,7 +222,7 @@
 ;; intern
 
 (defun find-message-file (folder uid)
-  (declare (type simple-base-string uid)
+  (declare (type string uid)
            (optimize (speed 3) (safety 0)))
   (let ((uid (uidify uid)))
     (declare (type string uid))
@@ -421,7 +421,7 @@
 		  
 		  (mel.filesystem:map-directory 
 		   (lambda (file)
-		     (declare (type simple-base-string file))
+		     (declare (type string file))
 		     (let ((uid (uidify file)))
 		       (setf (gethash uid uid-cache) (cons :cur file))
 		       (funcall fn (push-message file))))
