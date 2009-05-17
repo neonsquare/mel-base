@@ -173,72 +173,79 @@
   (unless (slot-boundp message 'bodystructure)
     (setf (bodystructure message) (compute-bodystructure message))))
 
-(defun read-line-counted (in-stream &optional (eof-error-p t) eof-value)
-  (let ((octets 0)
-	(line-end-p nil))
+(defun scan-forward-boundary-tag (in-stream boundary)
+  (let ((tag (concatenate 'string "--" boundary))
+        (match 0)
+        (octets 0)
+        (lines 0)
+        (line-ending-octets 0))
     (flet ((peek ()
 	     (peek-char nil in-stream))
+           (skip () (read-char in-stream))
 	   (consume ()
 	     (prog1
 		 (read-char in-stream)
 	       (incf octets))))
-       (with-output-to-string (line)
-	 (handler-case
 	     (tagbody
 	      start (let ((c (peek)))
 		      (case c
-			(#\return (consume) (go cr))
-			(#\linefeed (consume) (go lf))
-			(otherwise (write-char (consume) line) (go start))))
+			(#\return (skip) (go cr))
+			(#\linefeed (skip) (go lf))
+			(otherwise (consume) (go start))))
 		
-	      lf (setf line-end-p 1)
-		(go end)
+	      lf (setf line-ending-octets 1) (go newline)
 		
-	      cr (setf line-end-p 1)
+	      cr 
 		(let ((c (peek)))
 		  (case c
-		    (#\linefeed (consume) (go crlf))
-		    (otherwise (go end))))
+		    (#\linefeed (setf line-ending-octets 2)
+                                (skip) (go newline))
+		    (otherwise
+                     (setf line-ending-octets 1)
+                     (go newline))))
 		
-	      crlf (setf line-end-p 2) (go end)
-		
-	      end
-		(return-from read-line-counted
-		  (values (get-output-stream-string line)
-			  octets
-			  (not (null line-end-p)))))
-      (end-of-file ()(let ((result (get-output-stream-string line)))
-                       (cond ((plusp (length result))
-			      (return-from read-line-counted
-				(values result octets (not (null line-end-p)))))
-			     (line-end-p
-			      (return-from read-line-counted
-				(values result octets t)))
-			     (t
-			      (if eof-error-p
-				  (error 'end-of-file :stream in-stream)
-				  (return-from read-line-counted
-				  (values eof-value octets nil))))))))))))
+	      newline 
+                (let ((c (peek)))
+                  (case c
+                    (#\- (go possible-boundary))
+                    (otherwise (incf octets line-ending-octets)
+                               (incf lines)
+                               (setf line-ending-octets 0)
+                               (go start))))
 
-(defun scan-forward-boundary-tag (stream boundary)
-  (let ((tag (concatenate 'string "--" boundary)))
-    (let ((lines 0)
-	  (octets 0)
-	  line line-octets line-end-p)
-      (loop (multiple-value-setq (line line-octets line-end-p)
-		(read-line-counted stream))
-	    (when (string-prefixp tag line)
-	      (return))
-	    
-	    (when line-end-p
-	      (incf octets line-octets)
-	      (incf lines)))
-
-      (if (string-prefixp (concatenate 'string tag "--") line)
-	  (progn (format t "End tag in f-b-t~%")
-		 (force-output t)
-		 (values octets lines t))
-	  (values octets lines nil)))))
+              possible-boundary
+                  (if (= match (length tag))
+                    (go boundary-matched)
+                    (let ((c (peek)))
+                      (cond ((char= c (char tag match))
+                             (skip) (incf match)(go possible-boundary))
+                            (t (incf octets (+ line-ending-octets match))
+                               (setf match 0 line-ending-octets 0)
+                               (incf lines)
+                               (go start)))))
+              boundary-matched
+                  (let ((c (peek)))
+                    (case c
+                      (#\- (skip)
+                           (case c
+                             (#\- (go end-boundary))
+                             (otherwise (go boundary))))
+                      (otherwise (go boundary))))
+             
+              boundary
+                  (loop until (case (peek) ((#\return #\linefeed :eof) t)
+                                (otherwise nil))
+                        do (skip))
+                  (return-from scan-forward-boundary-tag
+                    (values octets lines nil))
+                  
+              end-boundary
+                   (loop until (case (peek) ((#\return #\linefeed :eof) t)
+                                 (otherwise nil))
+                         do (skip))
+                  (return-from scan-forward-boundary-tag
+                    (values octets lines t))
+                   ))))
 			        
 (defun compute-bodystructure (message)
   (compute-bodystructure-using-folder (folder message) message))
@@ -256,19 +263,16 @@
 	   (setf (eighth last-part) lines)
 	   (setf last-part nil))
 	 (cond (endp
-		(format t "End tag of boundary=~A~%" boundary)
-		(force-output t)
+		; (format t "End tag of boundary=~A~%" boundary)
 		(multiple-value-bind (super sub params)
 		    (content-type part)
 		  (declare (ignore super))
 		  (let ((result `(,@(nreverse parts) ,sub ,params nil nil)))
-		    (format t "Multipart-Structure: ~A~%" result)
-		    (force-output t)
+		    ; (format t "Multipart-Structure: ~A~%" result)
 		    (return result))))
 	       (t
 		(multiple-value-bind (headers hoctets) (read-rfc2822-header stream)
-		  (format t "Headers read ~A" hoctets)
-		  (force-output t)
+		 ; (format t "Headers read ~A" hoctets)
 		  (let ((content-type (or (cdr (assoc :content-type headers))
 					  "text/plain")))
 		    (multiple-value-bind (super sub params) (parse-content-type content-type)
@@ -285,10 +289,13 @@
 (defun read-simple-body (part)
   (multiple-value-bind (super sub params)
       (content-type part)
+    (unless (getf params :charset)
+        (setf params (list* :charset "us-ascii" params)))
   (let ((result (list super sub params nil nil (content-transfer-encoding part) nil nil nil nil nil)))
     (force-output t)
     result)))
 
+;; super sub params nil nil encoding octets lines nil nil nil
 (defun read-single-body (part stream)
   (let ((octets 0)
 	(lines 0) line line-octets)
@@ -305,6 +312,8 @@
 
     (multiple-value-bind (super sub params)
 	(content-type part)
+      (unless (getf params :charset)
+        (setf params (list* :charset "us-ascii" params)))
       (let ((result (list super sub params nil nil (content-transfer-encoding part) octets lines nil nil nil)))
 	(force-output t)
 	result))))
