@@ -64,7 +64,7 @@
       c))))
 
 (defun decode-quoted-printable (qp)
-  (with-input-from-string (s qp)
+  (with-input-from-sequence (s qp)
     (with-open-stream (in (make-instance 'quoted-printable-input-stream
                                          :octet-count (length qp)
                                          :input-stream s))

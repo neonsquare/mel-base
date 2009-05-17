@@ -93,7 +93,7 @@
 (defclass directory-iterator ()
   ((directory-pathname :accessor directory-pathname :initarg :pathname)
    dirfd
-   (current-entry :accessor current-entry :initform (make-array 256 :element-type 'base-char :fill-pointer 0))))
+   (current-entry :accessor current-entry :initform (make-array 256 :element-type lw:*default-character-element-type* :fill-pointer 0))))
 
 #+(and :lispworks (or :unix :macosx))
 (defmethod open-directory ((dir directory-iterator))

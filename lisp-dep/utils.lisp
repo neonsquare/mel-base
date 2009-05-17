@@ -110,4 +110,18 @@ Description:
   #+(and clisp (not lisp=cl)) (nth-value 0 (ignore-errors (lisp:probe-directory x)))
   #-(or cmu sbcl acl mcl lispworks abcl clisp)(error "file-directory-p not implemented"))
 
-	  
+(defmacro with-input-from-sequence ((sym seq) &body forms)
+  (rebinding (seq)
+    (with-unique-names (in)
+      `(if (stringp ,seq)
+         (with-input-from-string (,sym ,seq)
+           ,@forms)
+         (flexi-streams:with-input-from-sequence (,in ,seq)
+           (let ((,sym (flexi-streams:make-flexi-stream ,in)))
+           ,@forms))))))
+
+(defmethod make-sequence-input-stream ((seq string))
+  (make-string-input-stream seq))
+
+(defmethod make-sequence-input-stream ((seq vector))
+  (flexi-streams:make-flexi-stream (flexi-streams:make-in-memory-input-stream seq)))

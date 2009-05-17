@@ -52,13 +52,7 @@
 				     remote-host))
 				   remote-port)
     (let ((stream (sb-bsd-sockets:socket-make-stream socket :input t :output t
-						     :element-type element-type
-						     #+sb-unicode :external-format 
-						     #+sb-unicode(if (subtypep element-type
-								   'character)
-							 :ascii
-						       *default*)
-                                        ; :buffering :none
+						     :element-type :default
 						     )))
       stream)))
 
@@ -72,7 +66,7 @@
     (&key (remote-host "localhost") (remote-port 0) (element-type '(unsigned-byte 8)))
   (comm:open-tcp-stream remote-host remote-port
 			:direction :io
-			:element-type (if (eq element-type 'character) 'base-char element-type)
+			:element-type (if (eq element-type 'character) lw:*default-character-element-type* element-type)
 			:errorp t))
 
 #+abcl

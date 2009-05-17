@@ -172,7 +172,7 @@
 
 (defmethod open-message-input-stream-using-folder ((folder (eql nil)) (message message) start)
   (let ((headers (with-output-to-string (s) (write-rfc2822-header (header-fields message) s))))
-    (let ((header-stream (make-string-input-stream headers))
+    (let ((header-stream (make-sequence-input-stream headers))
 	  (body-stream (open (merge-pathnames (message-id message) "/tmp/mel/") :direction :input :if-does-not-exist :error
 			     :external-format #-lispworks :default #+lispworks '(:latin-1 :eol-style :lf))))
       (let ((header-length (length headers)))

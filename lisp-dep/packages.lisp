@@ -97,7 +97,9 @@
    "WHEN-LET"
    "REBINDING"
    "WITH-UNIQUE-NAMES"
-   "FILE-DIRECTORY-P"))
+   "FILE-DIRECTORY-P"
+   "WITH-INPUT-FROM-SEQUENCE"
+   "MAKE-SEQUENCE-INPUT-STREAM"))
 
 (defpackage mel.unix
   (:use :mel.utils :cl)

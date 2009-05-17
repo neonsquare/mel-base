@@ -225,7 +225,7 @@
     (end-of-file () (values (nreverse fields) octets)))))
 
 (defun parse-rfc2822-header (string)
-  (with-input-from-string (s string)
+  (with-input-from-sequence (s string)
     (read-rfc2822-header s)))
 
 (defun write-rfc2822-header (alist &optional (stream *standard-output*))

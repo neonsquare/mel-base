@@ -103,8 +103,8 @@
   (let ((index (1- start))
 	(buffer-index -1)
 	(rest (mod end 3)))
-    (let ((buffer (make-array (multiple-value-bind (div rest)
-				  (floor (- end start) 3) (+ (* div 4) (if (zerop rest) 0 4))) :element-type 'base-char)))
+    (let ((buffer (make-string (multiple-value-bind (div rest)
+				  (floor (- end start) 3) (+ (* div 4) (if (zerop rest) 0 4))))))
     (loop for quantum = 0
 	  while (< index (1- (- end rest)))
 	  do (setf (ldb (byte 8 16) quantum) (elt sequence (incf index))
@@ -135,8 +135,8 @@
   (let ((index (1- start))
 	(buffer-index -1)
 	(rest (mod end 3)))
-    (let ((buffer (make-array (multiple-value-bind (div rest)
-				  (floor (- end start) 3) (+ (* div 4) (if (zerop rest) 0 4))) :element-type 'base-char)))
+    (let ((buffer (make-string (multiple-value-bind (div rest)
+				  (floor (- end start) 3) (+ (* div 4) (if (zerop rest) 0 4))))))
     (loop for quantum = 0
 	  while (< index (1- (- end rest)))
 	  do (setf (ldb (byte 8 16) quantum) (elt sequence (incf index))

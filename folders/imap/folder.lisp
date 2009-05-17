@@ -244,7 +244,7 @@
 	     #-faithful-input(unless (accept-char #\return stream) (error "Syntax error"))
 	     (unless (accept-char #\linefeed stream) (error "Syntax error"))
 	     #-faithful-input
-	     (let ((buffer (make-string number)))
+	     (let ((buffer (make-array number :element-type '(unsigned-byte 8))))
 	       (read-sequence buffer stream)
 	       buffer)
 	     #+faithful-input
@@ -360,7 +360,7 @@
 		     (funcall on-bodystructure message))
 		   (setf part message))
 		 (when-let (message (getf form :BODY[HEADER]))
-		   (with-input-from-string (s message)
+		   (with-input-from-sequence (s message)
 		     (setf (weird-mail.mime:header-fields (sequence-number-message folder n))
 			   (mel.mime:read-rfc2822-header s)))
 		   (when on-header
@@ -470,7 +470,7 @@
   (let ((connection (mel.network:make-connection
 		     :remote-host (host folder)
 		     :remote-port (imap-port folder)
-		     :element-type 'character)))
+		     :element-type '(unsigned-byte 8))))
     (setf (connection folder) connection)
     (setf (state folder) :connected)
     (read-response connection)
@@ -683,17 +683,17 @@
 
 (defmethod open-message-input-stream-using-folder 
     ((folder imap-folder) message start)
-  (let ((stream (make-string-input-stream (fetch-message folder
+  (let ((stream (make-sequence-input-stream (fetch-message folder
 							 (uid message)))))
     (file-position stream (+ (file-position stream) start))
     stream))
 
 (defmethod message-body-stream-using-folder ((folder imap-folder) message)
-  (make-string-input-stream (fetch-message-body folder
+  (make-sequence-input-stream (fetch-message-body folder
 						(uid message))))
 
 (defmethod message-header-stream-using-folder ((folder imap-folder) message)
-  (let ((stream (make-string-input-stream (fetch-message-header folder
+  (let ((stream (make-sequence-input-stream (fetch-message-header folder
 								(uid message)))))
     stream))
 

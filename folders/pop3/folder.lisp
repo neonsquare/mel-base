@@ -213,7 +213,7 @@
 ;;; Implementation of the POP3-MESSAGE-INPUT-STREAM
 
 (defclass input-buffer-mixin ()
-  ((input-buffer :accessor input-buffer :initform (make-array 4096 :element-type 'base-char))
+  ((input-buffer :accessor input-buffer :initform (make-string 4096))
    (input-buffer-limit :accessor input-buffer-limit :initform 0)
    (input-buffer-index :accessor input-buffer-index :initform 0)))
 
@@ -327,7 +327,7 @@
     (with-open-stream (source (open-message-input-stream-using-folder
 			       source-folder message 0))
       (with-open-stream (sink (open-message-storing-stream sink-folder message))
-        (let ((buffer (make-array 4096 :element-type 'base-char)))
+        (let ((buffer (make-string 4096)))
 	  (declare (dynamic-extent buffer))
 	  (loop for position = (read-sequence buffer source)
 	        until (zerop position)

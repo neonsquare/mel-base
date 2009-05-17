@@ -56,7 +56,7 @@
   (flet ((substring (string start &optional end)
            (let ((end (or end (length string))))
              (make-array (- end start) 
-                         :element-type 'base-char 
+                         :element-type (array-element-type string)
                          :displaced-to string 
                          :displaced-index-offset start))))
     (declare (inline substring))
@@ -130,14 +130,14 @@
   (when-let (content-type-field (field :content-type message))
     (when (consp content-type-field)
       (setf content-type-field (first content-type-field)))
-    (ignore-errors
+;    (ignore-errors
       (multiple-value-bind (super sub params)
 	  (parse-content-type content-type-field)
 	(if (eq super :multipart)
 	    (if (not (getf params :boundary))
 		(values :text :plain params)
 	      (values super sub params))
-	  (values super sub params))))))
+	  (values super sub params)))));)
 	    
 
 (defmethod content-transfer-encoding ((message mime-header-mixin))
