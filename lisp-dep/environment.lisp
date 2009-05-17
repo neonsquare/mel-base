@@ -59,6 +59,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Host CL implementations
+
+#+(and lispworks unix)
+(fli:define-foreign-function (gethostname "gethostname" :source)
+    ((string (:reference-return (:ef-mb-string :limit 256)))
+     (n :int))
+  :lambda-list (&aux string (n 256))
+  :calling-convention :cdecl)
+
 #+openmcl
 (defun gethostname ()
   "Returns the hostname"
@@ -108,7 +116,7 @@ custom:*FOREIGN-ENCODING*)
 	(error "gethostname() failed."))))
 
 ;; If no GETHOSTNAME is yet defined - generate a dummy stub
-#+#. (cl:if (cl:fboundp 'gethostname) '(and) '(or))
+#-#. (cl:if (cl:fboundp 'gethostname) '(and) '(or))
 (progn
   (warn "Uses dummy GETHOSTNAME function - try loading UFFI before compiling mel-base")
 (defun gethostname ()
