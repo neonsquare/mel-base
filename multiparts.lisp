@@ -173,6 +173,42 @@
   (unless (slot-boundp message 'bodystructure)
     (setf (bodystructure message) (compute-bodystructure message))))
 
+(defun read-lines-and-octets (in-stream)
+  (let ((octets 0)
+        (lines 0))
+    (flet ((peek ()
+	     (peek-char nil in-stream nil :eof))
+	   (consume ()
+	     (prog1
+		 (read-char in-stream)
+	       (incf octets))))
+	     (tagbody
+	      start (let ((c (peek)))
+		      (case c
+			(#\return (consume) (go cr))
+			(#\linefeed (consume) (go lf))
+                        (:eof (go eof))
+			(otherwise (consume) (go start))))
+		
+	      lf (go newline)
+		
+	      cr 
+		(let ((c (peek)))
+		  (case c
+		    (#\linefeed 
+                     (consume) (go newline))
+                    (:eof (incf lines) (go eof))
+		    (otherwise
+                     (go newline))))
+		
+	      newline 
+                (incf lines)
+                (go start)
+              
+              eof
+              (return-from read-lines-and-octets
+                (values lines octets))))))
+
 (defun scan-forward-boundary-tag (in-stream boundary)
   (let ((tag (concatenate 'string "--" boundary))
         (match 0)
@@ -297,25 +333,13 @@
 
 ;; super sub params nil nil encoding octets lines nil nil nil
 (defun read-single-body (part stream)
-  (let ((octets 0)
-	(lines 0) line line-octets)
-	(loop (multiple-value-setq (line line-octets)
-		(read-line-counted stream nil stream))
-	      (when (eq stream line)
-		  (incf lines)
-		  (when (plusp line-octets)
-		    (incf octets line-octets))
-		(return))
-	   
-	      (incf lines)
-	      (incf octets line-octets))
-
+  (multiple-value-bind (lines octets)
+      (read-lines-and-octets stream)
     (multiple-value-bind (super sub params)
 	(content-type part)
       (unless (getf params :charset)
         (setf params (list* :charset "us-ascii" params)))
       (let ((result (list super sub params nil nil (content-transfer-encoding part) octets lines nil nil nil)))
-	(force-output t)
 	result))))
 
 (defmethod compute-bodystructure-using-folder (folder (message bodystructure-mixin))
