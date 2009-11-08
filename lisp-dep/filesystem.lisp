@@ -13,7 +13,7 @@
 	       (return))))
 	(unix:close-dir dir)))))
 
-#+(and sbcl unix)
+#+(and sbcl (or unix darwin))
 (defun map-directory (fn directory)
   (let ((dir (sb-posix:opendir directory)))
     (when dir
@@ -22,7 +22,7 @@
 	    (let ((dirent (sb-posix:readdir dir)))
 	      (if (not (sb-alien:null-alien dirent))
 		  (let ((file (sb-posix:dirent-name dirent)))
-		    (unless (char= #\. (char file 0))
+		    (unless (char= #\. (aref file 0))
 		      (funcall fn file)))
 		  (return))))
 	(sb-posix:closedir dir)))))
