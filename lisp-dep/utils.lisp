@@ -99,8 +99,9 @@ Description:
 (defun file-directory-p (x)
   #+cmu (eq :directory (unix:unix-file-kind
 			(namestring x)))
-  #+sbcl (eq :directory (sb-unix:unix-file-kind
-			(namestring x)))
+  #+sbcl (eq :directory (#.(or (find-symbol "NATIVE-FILE-KIND" :sb-impl)
+                               (find-symbol "UNIX-FILE-KIND" :sb-unix))
+                         (namestring x)))
   #+acl (eq :directory (excl:filesys-type x))
   #+(or mcl openmcl) (and (ccl:directory-pathname-p x)
 			  (probe-file x))
