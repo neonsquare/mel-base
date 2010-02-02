@@ -481,7 +481,7 @@
     (setf (state folder) :connected)
     (read-response connection)
 
-    (format connection "c01 LOGIN ~A ~A~A~A" 
+    (format connection "c01 LOGIN ~A \"~A\"~A~A"
 	    (username folder) (password folder) #\return #\linefeed)
 
 ;; Not really tested yet
