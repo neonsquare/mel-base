@@ -61,6 +61,8 @@
       (finalize-message  message :attached-files attached-files :body body))
       message))
 
+(defgeneric MAKE-MESSAGE-FROM (object))
+
 (defun finalize-message (message &key attached-files body)
   (finalize-message-using-folder (folder message) message
 				 :attached-files attached-files
@@ -77,9 +79,13 @@
 
 (defun make-message-from-file
     (file)
+  (warn "MAKE-MESSAGE-FROM-FILE is deprecated. Please use the new generic function MAKE-MESSAGE-FROM")
+  (make-message-from (pathname file)))
+
+(defmethod make-message-from ((object pathname))
   (let ((message (make-instance 'mime-message
-				:folder (pathname file))))
-    (with-open-file (s file)
+				:folder object)))
+    (with-open-file (s object)
       (setf (header-fields message) (read-rfc2822-header s)))
     message))
 
@@ -197,4 +203,15 @@
   (let ((file (merge-pathnames (concatenate 'string (message-id message) "-body") "/tmp/mel/")))
   (ed file)
   file))
-				
+
+;; Messages from strings
+
+(defclass string-basic-receiver (basic-receiver)
+  ((string :initarg :string)))
+
+(defmethod open-message-input-stream-using-folder ((folder string-basic-receiver) (message message) start)
+  (make-string-input-stream (slot-value folder 'string) start))
+
+(defmethod make-message-from ((object string))
+  (make-instance 'mime-message
+                 :folder (make-instance 'string-basic-receiver :string object)))

@@ -218,6 +218,7 @@
      ;; compose-message.lisp
      "MAKE-MESSAGE"
      "FINALIZE-MESSAGE"
+     "MAKE-MESSAGE-FROM"
 ;     "MAKE-MESSAGE-BODY"
 ;     "EDIT-MESSAGE-BODY"
      ))
