@@ -33,7 +33,7 @@
 (in-package :mel.system)
 
 (defsystem mel-base
-    :version "0.9.2"
+    :version "0.9.3"
     :components ((:module "folders"
 			  :depends-on 
 			  ("protocols"
