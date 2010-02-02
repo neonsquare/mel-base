@@ -216,13 +216,17 @@
         (lines 0)
         (line-ending-octets 0))
     (flet ((peek ()
-	     (peek-char nil in-stream))
+	     (peek-char nil in-stream nil :eof))
            (skip () (read-char in-stream))
 	   (consume ()
 	     (prog1
 		 (read-char in-stream)
 	       (incf octets))))
 	     (tagbody
+              init (let ((c (peek)))
+                     (if (char= c #\-)
+                       (go possible-boundary)
+                       (go start)))
 	      start (let ((c (peek)))
 		      (case c
 			(#\return (skip) (go cr))
@@ -270,6 +274,9 @@
              
               boundary
                   (loop until (case (peek) ((#\return #\linefeed :eof) t)
+                                (otherwise nil))
+                        do (skip))
+                  (loop while (case (peek) ((#\return #\linefeed) t)
                                 (otherwise nil))
                         do (skip))
                   (return-from scan-forward-boundary-tag
