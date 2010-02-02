@@ -29,63 +29,23 @@
 
 (in-package :mel.network)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  #+lispworks (require "comm"))
+;; Comment by <js@crispylogics.com> This function doesn't return the usocket
+;; itself and therefore demands that a connection can be closed using CL:CLOSE
+(defun make-connection (&key (remote-host "localhost") (remote-port 0)
+			(element-type '(unsigned-byte 8)) (ssl nil ssl-p))
+  (let ((fd (usocket:socket-stream
+	     (usocket:socket-connect remote-host remote-port
+				     :element-type element-type))))
+    (maybe-ssl-connection ssl-p ssl remote-port fd)))
 
+(defun maybe-ssl-connection (ssl-p ssl port fd)
+  (if (or (and ssl-p ssl)
+	  (and (not ssl-p) (ssl-default port)))
+      (make-ssl-connection fd)
+      fd))
 
-;; Socket Streams
+(defun ssl-default (port)
+  (member port '(993 995 465 585)))
 
-#+cmu
-(defun make-connection 
-    (&key (remote-host "localhost") (remote-port 0) (element-type '(unsigned-byte 8)))
-  (sys:make-fd-stream  
-   (ext:connect-to-inet-socket remote-host remote-port)
-   :input t :output t :element-type element-type))
-
-#+sbcl
-(defun make-connection 
-  (&key (remote-host "localhost") (remote-port 0)(element-type '(unsigned-byte 8)))
-  (let ((socket (make-instance 'sb-bsd-sockets:inet-socket :type :stream :protocol :tcp)))
-    (sb-bsd-sockets:socket-connect socket 
-				   (sb-bsd-sockets:host-ent-address
-				    (sb-bsd-sockets:get-host-by-name
-				     remote-host))
-				   remote-port)
-    (let ((stream (sb-bsd-sockets:socket-make-stream socket :input t :output t
-						     :element-type :default
-						     )))
-      stream)))
-
-#+acl
-(defun make-connection 
-  (&key (remote-host "localhost") (remote-port 0) (element-type '(unsigned-byte 8)))
-  (socket:make-socket :element-type element-type :remote-host remote-host :remote-port remote-port))
-
-#+lispworks
-(defun make-connection 
-    (&key (remote-host "localhost") (remote-port 0) (element-type '(unsigned-byte 8)))
-  (comm:open-tcp-stream remote-host remote-port
-			:direction :io
-			:element-type (if (eq element-type 'character) lw:*default-character-element-type* element-type)
-			:errorp t))
-
-#+abcl
-(defun make-connection 
-    (&key (remote-host "localhost") (remote-port 0) (element-type '(unsigned-byte 8)))
-  (let ((socket (ext:make-socket remote-host remote-port)))
-    (ext:get-socket-stream socket :element-type element-type)))
-
-#+clisp
-(defun make-connection 
-    (&key (remote-host "localhost") (remote-port 0) (element-type '(unsigned-byte 8)))
-  (socket:socket-connect
-   remote-port remote-host
-   :element-type element-type))
-
-#+openmcl
-(defun make-connection
-  (&key (remote-host "localhost") (remote-port 0) (element-type '(unsigned-byte 8)))
-  (openmcl-socket:make-socket :format (if (subtypep element-type 'character)
-					  :text
-					:binary)
-			      :remote-host remote-host :remote-port remote-port))
+(defun make-ssl-connection (fd)
+  (cl+ssl:make-ssl-client-stream fd :external-format :iso-8859-1))

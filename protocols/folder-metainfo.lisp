@@ -56,7 +56,7 @@
        (push message non-recent-messages))
      folder)
     (mapcar fn (set-difference all-messages non-recent-messages
-                               :test #'uid=))))
+			       :test (lambda (x y) (uid= folder x y))))))
 
 (defmethod map-recent-messages :around (fn (folder basic-folder))
   (declare (ignore fn))

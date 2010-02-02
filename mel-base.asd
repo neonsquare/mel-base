@@ -85,4 +85,5 @@
 		 (:file "encapsulating-stream" :depends-on ("packages"))
 		 (:file "line-terminator-filter" :depends-on ("encapsulating-stream"))
 		 (:file "compose-message" :depends-on ("protocols" "mime")))
-    :depends-on (#+sbcl sb-posix #+sbcl sb-md5 #+sbcl sb-bsd-sockets #+cmu uffi flexi-streams))
+    :depends-on (#+sbcl sb-posix #+sbcl sb-md5 #+sbcl sb-bsd-sockets
+			#+cmu uffi flexi-streams #-lispworks cl+ssl usocket))

@@ -427,6 +427,12 @@
 				(funcall on-list 
 					 (first arguments)
 					 (rest arguments))))
+			     ((eq :search type)
+			      (when on-list
+				(funcall on-list arguments)))
+			     ((eq :capability type)
+			      (setf (slot-value folder 'capabilities)
+				    (rest arguments)))
 			     ((eql type :ok)
 			      (case (first arguments)
 				(:uidvalidity 
@@ -524,6 +530,18 @@
 			:on-exists (lambda (n) (setf exists n)))
       (values exists recent))))
 
+(defun capability (folder)
+  (send-command folder "~A capability" "t01")
+  (process-response folder))
+
+(defun start-idle (folder)
+  (send-command folder "~A idle" "t01")
+  (process-response folder))
+
+(defun end-idle (folder)
+  (send-command folder "done")
+  (process-response folder))
+
 (defun noop (folder)
   (send-command folder "~A noop" "t01")
   (process-response folder))
@@ -562,6 +580,23 @@
 	   (clrhash (size-table folder))
 	   (ensure-connection folder)
 	   
+	   (send-command folder "~A fetch 1:~A (UID FLAGS)" ; (UID RFC822.SIZE FLAGS)"
+			 "UPDATE" (slot-value folder 'exists))
+	   (let (messages)
+	     (process-response folder
+			       :on-uid (lambda (message)
+					 (push message messages)
+					 (funcall callback message)))
+	     (setf (slot-value folder 'messages) messages)))
+	  (t (slot-value folder 'messages)))))
+
+(defmethod update-new-mailbox ((folder imap-folder) callback)
+  (let ((non-recent (hash-table-count (message-cache folder)))
+	(exists (count-messages folder)))
+    (cond ((> exists non-recent)
+	   (clrhash (size-table folder))
+	   (ensure-connection folder)
+
 	   (send-command folder "~A fetch 1:~A (UID FLAGS)" ; (UID RFC822.SIZE FLAGS)"
 			 "UPDATE" (slot-value folder 'exists))
 	   (let (messages)
@@ -658,7 +693,14 @@
 
 (defmethod search-mailbox ((folder imap-folder) query)
   (send-command folder "~A uid search ~A" "t01" query)
-  (process-response folder))
+  (let (messages)
+    (labels ((return-messages (list)
+	       (setf messages
+		     (mapcar (lambda (uid)
+			       (find-message folder uid))
+			     list))))
+      (process-response folder :on-list #'return-messages)
+      messages)))
 
 (defmethod mark-deleted ((folder imap-folder) uid)
   (send-command folder "~A uid store ~A +flags (\\Deleted)" "t01"
