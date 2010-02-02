@@ -387,31 +387,31 @@
        ;; Locate it by scanning through the message
        )))
 
-(defmethod part-body-stream ((part part))
-  (if (zerop (part-number part))
-      ;; The zeroth part of a message is the message itself
-      (let ((parent (loop for parent = (parent part) then (parent parent)
-                             until (typep parent 'message)
-                             finally (return parent))))
-	(message-body-stream parent))
-    (let ((stream (open-message-input-stream part 0)))
-      (skip-rfc2822-header stream)
-      stream)))
-
-(defmethod open-message-input-stream-using-folder 
-    ((folder multipart) (part part) start)
-  (open-message-input-stream-using-folder (parent folder) part start))
-
-(defmethod open-message-input-stream-using-folder
-    ((folder message) (part part) start)
-  (let ((stream (nth-part-stream (part-number part) (getf (nth-value 2 (content-type folder)) :boundary) folder)))
-    (loop repeat start do (read-char stream))
+(defmethod part-stream ((part part))
+  "Return a stream to the start of the part"
+  (let* ((message (loop for parent = (parent part) then (parent parent)
+                        until (typep parent 'message)
+                        finally (return parent)))
+         (stream (message-body-stream message))
+         (boundary (boundary-tag (parent part))))
+    (loop repeat (part-number part)
+          do (scan-forward-boundary-tag stream boundary))
     stream))
 
-(defmethod message-body-stream-using-folder ((folder multipart) (part part))
-  (message-body-stream-using-folder (parent folder) part))
+(defmethod part-body-stream ((part part))
+  "Skip header to beginning of part body and return stream"
+  (let ((part-stream (part-stream part)))
+    (read-rfc2822-header stream)))
 
-(defmethod message-body-stream-using-folder ((folder message) (part part))
+(defmethod open-message-input-stream-using-folder
+           (folder (part part) start)
+  (declare (ignore folder))
+  (let ((stream (part-stream part)))
+    (when start
+      (loop repeat start do (read-char stream)))
+    stream))
+
+(defmethod message-body-stream-using-folder (folder (part part))
   (declare (ignore folder))
   (part-body-stream part))
 
