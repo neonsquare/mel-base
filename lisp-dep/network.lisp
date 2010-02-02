@@ -53,4 +53,5 @@
 
 #+lispworks
 (defun make-ssl-connection (sock-stream)
-  (comm:attach-ssl sock-stream))
+  (comm:attach-ssl sock-stream :ssl-side :client)
+  sock-stream)

@@ -104,9 +104,21 @@
    (messages :initform nil)
    (last-command :initform nil :accessor last-command)
    (state :accessor state :initarg :state :initform :disconnected)))
+
+(defclass imaps-folder (imap-folder) ())
                   
 (defun make-imap-folder (&key (host "imap.web.de")(port 143) username password (mailbox "INBOX"))
-  (make-instance 'imap-folder 
+  (make-instance 'imap-folder
+                 :name (format nil "imap://~A!~A@~A:~A" username password host port)
+                 :host host
+                 :port port
+                 :username username
+                 :password password
+		 :mailbox mailbox
+                 :state :disconnected))
+
+(defun make-imaps-folder (&key (host "imap.web.de")(port 993) username password (mailbox "INBOX"))
+  (make-instance 'imaps-folder
                  :name (format nil "imap://~A!~A@~A:~A" username password host port)
                  :host host
                  :port port
@@ -470,9 +482,20 @@
                             (write-char #\return (connection sink-folder))
                             (write-char #\linefeed (connection sink-folder))
                             (force-output (connection sink-folder))))))))
-                          
 
-(defun make-imap-connection (folder) 
+(defmethod login ((folder imap-folder))
+  (let ((connection (connection folder)))
+    (format connection "c01 LOGIN ~A \"~A\"~A~A"
+            (username folder) (password folder) #\return #\linefeed)
+
+    ;; Not really tested yet
+    ;    (authenticate-cram-md5 folder)
+
+    (force-output connection)
+    (process-response folder)
+    connection))
+
+(defmethod make-imap-connection ((folder imap-folder))
   (let ((connection (mel.network:make-connection
 		     :remote-host (host folder)
 		     :remote-port (imap-port folder)
@@ -480,16 +503,18 @@
     (setf (connection folder) connection)
     (setf (state folder) :connected)
     (read-response connection)
+    (login folder)))
 
-    (format connection "c01 LOGIN ~A \"~A\"~A~A"
-	    (username folder) (password folder) #\return #\linefeed)
-
-;; Not really tested yet
-;    (authenticate-cram-md5 folder)
-
-    (force-output connection)
-    (process-response folder)
-    connection))
+(defmethod make-imaps-connection ((folder imaps-folder))
+  (let ((connection (mel.network:make-connection
+		     :remote-host (host folder)
+		     :remote-port (imap-port folder)
+                     :ssl t
+		     :element-type '(unsigned-byte 8))))
+    (setf (connection folder) connection)
+    (setf (state folder) :connected)
+    (read-response connection)
+    (login folder)))
 
 (defun send-command (folder string &rest args)
   (handler-case

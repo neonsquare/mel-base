@@ -283,7 +283,9 @@
    :mel.utils)
   (:nicknames weird-mail.folders.imap)
   (:export "IMAP-FOLDER"
-	   "MAKE-IMAP-FOLDER"))
+           "IMAPS-FOLDER"
+	   "MAKE-IMAP-FOLDER"
+           "MAKE-IMAPS-FOLDER"))
 
 ;; Additional
 (defpackage mel.pop3-server
