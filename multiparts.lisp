@@ -315,6 +315,7 @@
 		    (return result))))
 	       (t
 		(multiple-value-bind (headers hoctets) (read-rfc2822-header stream)
+                  (declare (ignore hoctets))
 		 ; (format t "Headers read ~A" hoctets)
 		  (let ((content-type (or (cdr (assoc :content-type headers))
 					  "text/plain")))
@@ -401,7 +402,7 @@
 (defmethod part-body-stream ((part part))
   "Skip header to beginning of part body and return stream"
   (let ((part-stream (part-stream part)))
-    (read-rfc2822-header stream)))
+    (read-rfc2822-header part-stream)))
 
 (defmethod open-message-input-stream-using-folder
            (folder (part part) start)
