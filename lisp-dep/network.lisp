@@ -47,5 +47,10 @@
 (defun ssl-default (port)
   (member port '(993 995 465 585)))
 
+#-lispworks
 (defun make-ssl-connection (fd)
   (cl+ssl:make-ssl-client-stream fd :external-format :iso-8859-1))
+
+#+lispworks
+(defun make-ssl-connection (sock-stream)
+  (comm:attach-ssl sock-stream))
