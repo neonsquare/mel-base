@@ -58,7 +58,6 @@
                 #+lispworks #:stream-read-buffer
                 #+lispworks #:stream-fill-buffer
                 #+lispworks #:stream-flush-buffer
-		#+abcl #:stream-close
                 #+lispworks #:with-stream-input-buffer
                 #+lispworks #:with-stream-output-buffer)
   (:export 
