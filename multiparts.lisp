@@ -402,7 +402,8 @@
 (defmethod part-body-stream ((part part))
   "Skip header to beginning of part body and return stream"
   (let ((part-stream (part-stream part)))
-    (read-rfc2822-header part-stream)))
+    (read-rfc2822-header part-stream)
+    part-stream))
 
 (defmethod open-message-input-stream-using-folder
            (folder (part part) start)
