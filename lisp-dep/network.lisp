@@ -42,7 +42,7 @@
   (if (or (and ssl-p ssl)
 	  (and (not ssl-p) (ssl-default port)))
       (make-ssl-connection fd)
-      fd))
+      (flexi-streams:make-flexi-stream fd :external-format :iso-8859-1)))
 
 (defun ssl-default (port)
   (member port '(993 995 465 585)))
