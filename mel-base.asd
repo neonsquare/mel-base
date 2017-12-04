@@ -34,6 +34,9 @@
 
 (defsystem mel-base
     :version "0.9.3"
+    :author "Jochen Schmidt"
+    :description "A versatile mail library for Common Lisp"
+    :license "BSD-2-Clause"
     :components ((:module "folders"
 			  :depends-on 
 			  ("protocols"
